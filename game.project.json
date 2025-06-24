@@ -1,8 +1,7 @@
 {
 	"name": "Duolingo-2024",
 	"servePlaceIds": [
-		120816315961165,
-		73732636803422
+		125789727331049
 	],
 	"tree": {
 		"$className": "DataModel",

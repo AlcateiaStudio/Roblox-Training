@@ -54,6 +54,10 @@ You should add your [Dev] Place, or any place really, that you want to sync, to 
 
 Once added, you may easily sync Rojo again and the Experience should be accepted.
 
+### Commander Admins List
+
+Add your Roblox ID to the file "Admins"
+
 ### Cautions
 
 - You may not edit code directly in Roblox Studio, your changes will be lost.
