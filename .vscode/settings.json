@@ -10,7 +10,8 @@
         "Game": "Delta",
         "Hub": "Node",
         "Common": "Global",
-        "Copy": "Syntax"
+        "Copy": "Syntax",
+        "System": "Wakatime",
     },
     "luau-lsp.require.directoryAliases": {
         "@lune/": "~/.lune/.typedefs/0.8.0/",

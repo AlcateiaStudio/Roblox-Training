@@ -98,4 +98,29 @@
       ],
       "description": "Create a new Sleitnick Knit Service"
    },
+   "LifetimeObject": {
+      "prefix": "lifetimeobject",
+      "body": [
+         "local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
+         "",
+         "local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)",
+         "",
+         "local ${1:ServiceName} = LifetimeObject.new()",
+         "",
+         "function ${1:ServiceName}:OnAwake()",
+         "",
+         "end",
+         "",
+         "function ${1:ServiceName}:OnStart()",
+         "",
+         "end",
+         "",
+         "function ${1:ServiceName}:OnDestroy()",
+         "",
+         "end",
+         "",
+         "return ${1:ServiceName}"
+      ],
+      "description": "Create a new LifetimeObject for use in your game"
+   }
 }
