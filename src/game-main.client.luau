@@ -1,5 +1,4 @@
 local version = "0.1 - Hello World!"
-print("Game v. ", version)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -7,10 +6,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Folders
 local ClientFolder = ReplicatedStorage.Client
 
+-- Variables
+local debug = false
+
 -- Imports
-local Knit = require(ReplicatedStorage.Packages.Knit)
+local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Replica = require(ReplicatedStorage.Client.ReplicaClient)
 local AdminsList = require(ReplicatedStorage.Shared.Admins.AdminsList)
+
+local function printDebug(...)
+	if debug then
+		print(...)
+	end
+end
+
+printDebug("Game v. ", version)
 
 -- Require all the client modules
 local function RequireContents(folder: Folder)
@@ -39,11 +49,13 @@ RequireContents(ClientFolder)
 
 Replica.RequestData()
 
-Knit.Start()
-	:andThen(function()
-		print("Knit started all controllers")
-	end)
-	:catch(warn)
+-- Phase 1: Awake all objects
+LifetimeObject.AwakeAll()
+
+-- Phase 2: Start all objects
+LifetimeObject.StartAll()
+
+printDebug("🎯 Lifetime System initialized successfully!")
 
 --------------------------------------------------------------------------------
 --// Commander //--
@@ -53,28 +65,3 @@ if AdminsList.IsAdmin(Players.LocalPlayer.UserId) then
 
 	Cmdr:SetActivationKeys({ Enum.KeyCode.F2 })
 end
-
---------------------------------------------------------------------------------
---// Override Default Core Call for Resetting Character //--
---------------------------------------------------------------------------------
-local coreCall
-do
-	local MAX_RETRIES = 8
-
-	local StarterGui = game:GetService("StarterGui")
-	local RunService = game:GetService("RunService")
-
-	function coreCall(method, ...)
-		local result = {}
-		for retries = 1, MAX_RETRIES do
-			result = { pcall(StarterGui[method], StarterGui, ...) }
-			if result[1] then
-				break
-			end
-			RunService.Stepped:Wait()
-		end
-		return unpack(result)
-	end
-end
-
-coreCall("SetCore", "ResetButtonCallback", false)

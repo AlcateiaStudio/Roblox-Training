@@ -9,8 +9,16 @@ local commandsFolder = ServerScriptService.Server.Commander.Commands
 local commanderTypesFolder = ServerScriptService.Server.Commander.Types
 local commanderHooksFolder = ServerScriptService.Server.Commander.Hooks
 
-local Knit = require(ReplicatedStorage.Packages.Knit)
+local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Cmdr = require(ReplicatedStorage.Packages.Cmdr)
+
+local debug = false
+
+local function printDebug(...)
+	if debug then
+		print(...)
+	end
+end
 
 local function RequireContents(folder: Folder)
 	for _, module in ipairs(folder:GetDescendants()) do
@@ -39,8 +47,10 @@ Cmdr:RegisterCommandsIn(commandsFolder)
 Cmdr:RegisterTypesIn(commanderTypesFolder)
 Cmdr:RegisterHooksIn(commanderHooksFolder)
 
-Knit.Start()
-	:andThen(function()
-		print("Knit started all services")
-	end)
-	:catch(warn)
+-- Phase 1: Awake all objects
+LifetimeObject.AwakeAll()
+
+-- Phase 2: Start all objects
+LifetimeObject.StartAll()
+
+printDebug("🎯 Server Lifetime System initialized successfully!")

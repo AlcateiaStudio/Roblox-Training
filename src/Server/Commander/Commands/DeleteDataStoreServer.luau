@@ -1,9 +1,8 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local Knit = require(ReplicatedStorage.Packages.Knit)
+local PlayerDataService = require(ServerScriptService.Server.Services.PlayerDataService)
 
 return function(context, player: Player)
-	local PlayerDataService = Knit.GetService("PlayerDataService")
 	PlayerDataService:WipePlayerData(player)
 	return "Deleted Data Store"
 end

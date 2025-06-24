@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local Knit = require(ReplicatedStorage.Packages.Knit)
+local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local ProfileStore = require(ServerScriptService.Server.ProfileStore)
 local Replica = require(ServerScriptService.Server.ReplicaServer)
 
@@ -24,10 +24,9 @@ local Profiles: { [Player]: {
 	Replica: Replica.Replica,
 } } = {}
 
-local PlayerDataService = Knit.CreateService({
-	Name = "PlayerDataService",
-	Client = {},
-})
+-- Create PlayerDataService that inherits from LifetimeObject
+local PlayerDataService = LifetimeObject.new()
+PlayerDataService.Name = "PlayerDataService"
 
 local function onPlayerReady(player: Player)
 	-- Start a profile session for this player's data:
@@ -71,7 +70,12 @@ local function onPlayerReady(player: Player)
 	end
 end
 
-function PlayerDataService:KnitInit()
+function PlayerDataService:OnAwake()
+	self.connections = {}
+end
+
+function PlayerDataService:OnStart()
+	-- Handle players already in the game when the service starts
 	for _, player in Players:GetPlayers() do
 		if Replica.ReadyPlayers[player.UserId] then
 			task.spawn(onPlayerReady, player)
@@ -80,9 +84,11 @@ function PlayerDataService:KnitInit()
 		end
 	end
 
-	Replica.NewReadyPlayer:Connect(onPlayerReady)
+	-- Connect to new players joining
+	self.connections.newReadyPlayer = Replica.NewReadyPlayer:Connect(onPlayerReady)
 
-	Players.PlayerRemoving:Connect(function(player)
+	-- Handle players leaving
+	self.connections.playerRemoving = Players.PlayerRemoving:Connect(function(player)
 		local profile = Profiles[player] and Profiles[player].Profile
 		if profile ~= nil then
 			print(`Profile saved for {player.DisplayName}!`, profile.Data)
@@ -91,6 +97,24 @@ function PlayerDataService:KnitInit()
 			warn(`Profile not found for {player.DisplayName}, data was probably manually wiped. If not, this is a bug!`)
 		end
 	end)
+end
+
+function PlayerDataService:OnDestroy()
+	-- Clean up connections
+	for _, connection in pairs(self.connections) do
+		if connection then
+			connection:Disconnect()
+		end
+	end
+	self.connections = {}
+
+	-- End all active profile sessions
+	for player, data in pairs(Profiles) do
+		if data.Profile then
+			data.Profile:EndSession()
+		end
+	end
+	Profiles = {}
 end
 
 local function WaitForProfile(player: Player, timeout: number?)
