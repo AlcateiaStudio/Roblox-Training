@@ -16,6 +16,7 @@ Make sure you have the following installed in your machine:
 - Get the `Luau LSP` extension: (https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.luau-lsp)
 - Get the `Selene` extension: (https://marketplace.visualstudio.com/items?itemName=Kampfkarren.selene-vscode)
 - Get the `StyLua` extension: (https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.stylua)
+- Get the `Rojo` extension: (https://marketplace.visualstudio.com/items?itemName=evaera.vscode-rojo)
 
 #### Install Aftman
 
