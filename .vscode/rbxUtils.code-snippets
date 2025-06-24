@@ -1,0 +1,101 @@
+{
+   "RobloxService": {
+      "scope": "luau",
+      "prefix": "rbxservice",
+      "body": [
+         "local ${1:ServiceName} = game:GetService(\"${1:ServiceName}\")"
+      ]
+   },
+   "Preamble": {
+      "scope": "luau",
+      "prefix": "preamble",
+      "body": [
+         "-- Authors: ${1:NAME}",
+         "-- $CURRENT_MONTH_NAME $CURRENT_DATE, $CURRENT_YEAR",
+         "--[=[",
+         "\t@class ${TM_FILENAME_BASE}",
+         "]=]",
+         "",
+      ],
+   },
+   "Import": {
+      "prefix": "import",
+      "body": [
+         "local ${1:Name} = require(\"${2}${1:Name}\")",
+      ]
+   },
+   "ImportPackage": {
+      "prefix": "importpackage",
+      "body": [
+         "local ${1:Name} = require(\"@Packages/${1:Name}\")",
+      ]
+   },
+   "Section Header": {
+      "prefix": [
+         "sectionheader"
+      ],
+      "body": [
+         "--------------------------------------------------------------------------------",
+         "--// ${0:SectionName} //--",
+         "--------------------------------------------------------------------------------",
+      ],
+      "description": "An organizational header for a code section."
+   },
+   "Sub Header": {
+      "prefix": [
+         "subheader"
+      ],
+      "body": [
+         "--// ${0:SectionName} //--",
+      ],
+      "description": "A small header for a code section."
+   },
+   "moonwavedoc": {
+      "scope": "luau",
+      "prefix": "moonwavetype",
+      "body": [
+         "--[=[",
+         "\t@within $TM_FILENAME_BASE",
+         "\t@type ${0:TypeName}",
+         "]=]"
+      ]
+   },
+   "module": {
+      "scope": "luau",
+      "prefix": "module",
+      "body": [
+         "local ${1:ModuleName} = {}",
+         "",
+         "return ${1:ModuleName}",
+      ]
+   },
+   "Knit Loopable Service Duolingo": {
+      "prefix": "knitserviceloop",
+      "body": [
+         "local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
+         "local Knit = require(ReplicatedStorage.Packages.Knit)",
+         "",
+         "local ${1:ServiceName} = Knit.CreateService {",
+         "\tName = \"${1:ServiceName}\", Client = {} ",
+         "}",
+         "",
+         "function ${1:ServiceName}:KnitInit()",
+         "\tprint(\"${1:ServiceName} KnitInit\")",
+         "end",
+         "",
+         "function ${1:ServiceName}:KnitStart()",
+         "\tprint(\"${1:ServiceName} KnitStart\")",
+         "\tKnit.GetService(\"GameService\").Signals.GameEnded:Connect(function()",
+         "\t\tself:OnLoop()",
+         "\tend)",
+         "end",
+         "",
+         "function ${1:ServiceName}:OnLoop()",
+         "\tprint(\"${1:ServiceName} is Restarting...\")",
+         "end",
+         "",
+         "return ${1:ServiceName}"
+      ],
+      "description": "Create a new Sleitnick Knit Service"
+   },
+}

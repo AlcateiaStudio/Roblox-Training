@@ -1,0 +1,9 @@
+*.rbxl.lock
+Packages
+roblox.toml
+roblox.yml
+sourcemap.json
+package-lock.json
+build
+wally.lock
+*.ignore

@@ -1,0 +1,44 @@
+{
+	"name": "Duolingo-2024",
+	"servePlaceIds": [
+		120816315961165,
+		73732636803422
+	],
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"Shared": {
+				"$className": "Folder",
+				"$path": "src/Shared"
+			},
+			"Client": {
+				"$className": "Folder",
+				"$path": "src/Client"
+			},
+			"Packages": {
+				"$className": "Folder",
+				"$path": "Packages"
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"Server": {
+				"$className": "Folder",
+				"$path": "src/Server"
+			},
+			"ServerBootstrapper": {
+				"$path": "src/game-main.server.luau"
+			}
+		},
+		"StarterPlayer": {
+			"$className": "StarterPlayer",
+			"StarterPlayerScripts": {
+				"$className": "StarterPlayerScripts",
+				"ClientBootstrapper": {
+					"$path": "src/game-main.client.luau"
+				}
+			}
+		}
+	}
+}
