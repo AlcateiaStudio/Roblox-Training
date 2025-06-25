@@ -1,7 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local commonServicesFolder = ServerScriptService.Server.Services
 local serverServicesFolder = ServerScriptService.Server.Services
 local componentsFolder = ServerScriptService.Server.Components
 
@@ -38,7 +37,6 @@ local function RequireContents(folder: Folder)
 	end
 end
 
-RequireContents(commonServicesFolder)
 RequireContents(serverServicesFolder)
 RequireContents(componentsFolder)
 
