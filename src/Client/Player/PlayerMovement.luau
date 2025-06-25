@@ -11,6 +11,11 @@ local humanoid = character:FindFirstChildOfClass("Humanoid")
 
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand" }
 
+local speedBase = 10
+local speedMax = 100
+local acceleration = 12
+local jumpAccelerationPercentage = 0.3
+
 local collidedInThisFrame = false
 
 local function OnCharacterCollided(part: BasePart)
@@ -20,7 +25,7 @@ local function OnCharacterCollided(part: BasePart)
 
 	collidedInThisFrame = true
 
-	print(`Colidiu com {part}`)
+	humanoid.WalkSpeed = speedBase
 end
 
 local function SubscribeToBodyPartsEvents()
@@ -33,18 +38,32 @@ end
 
 function PlayerMovement:OnAwake()
 	SubscribeToBodyPartsEvents()
-
-	humanoid.WalkSpeed = 120
 end
 
 function PlayerMovement:OnStart() end
 
 function PlayerMovement:OnDestroy() end
 
-local function Update()
+local function Update(time, deltaTime)
 	collidedInThisFrame = false
 
-	--print(humanoid.MoveDirection)
+	local isMoving = humanoid.MoveDirection.Magnitude > 0
+	local isJumping = humanoid:GetState() == Enum.HumanoidStateType.Freefall
+	local _acceleration
+
+	if isMoving == true then
+		_acceleration = acceleration
+	else
+		_acceleration = acceleration * -1
+	end
+
+	if isJumping == true then
+		_acceleration *= jumpAccelerationPercentage
+	end
+
+	humanoid.WalkSpeed += _acceleration * deltaTime
+
+	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, 0, speedMax)
 end
 
 RunService.Stepped:Connect(Update)
