@@ -1,5 +1,3 @@
--- TODO: This should be merged with the Game/AreaDetectorComponent, so we should test which parts of the code should be maintained and test both Game and Hub places.
-
 --// Services //--
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -13,7 +11,7 @@ local Signal = require(Packages.Signal)
 --// Constants //--
 local UPDATE_RATE = 6
 
----------------------------------------------------------------1-----------------
+--------------------------------------------------------------------------------
 --// Component //--
 --------------------------------------------------------------------------------
 local AreaDetector = Component.new({ Tag = "AreaDetector", Extensions = {} })
