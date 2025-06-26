@@ -25,7 +25,7 @@ local Profiles: { [Player]: {
 } } = {}
 
 -- Create PlayerDataService that inherits from LifetimeObject
-local PlayerDataService = LifetimeObject.new()
+local PlayerDataService = {}
 PlayerDataService.Name = "PlayerDataService"
 
 local function onPlayerReady(player: Player)
@@ -178,4 +178,4 @@ function PlayerDataService:WipePlayerData(player: Player)
 	end
 end
 
-return PlayerDataService
+return LifetimeObject.extend(PlayerDataService, "PlayerDataService")

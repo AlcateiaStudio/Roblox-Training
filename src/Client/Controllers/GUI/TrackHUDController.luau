@@ -4,11 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 
-local TrackHUDController = LifetimeObject.new()
-TrackHUDController.Name = "TrackHUDController"
-
---// Type Defintions //--
-type Hud = {
+--// Type Definitions //--
+export type Hud = {
 	ScreenGui: ScreenGui,
 	Coins: TextLabel,
 	Placement: TextLabel,
@@ -16,7 +13,7 @@ type Hud = {
 	Timer: TimerTexts,
 }
 
-type TimerTexts = {
+export type TimerTexts = {
 	Minutes: TextLabel,
 	Seconds: TextLabel,
 	Milliseconds: TextLabel,
@@ -24,6 +21,9 @@ type TimerTexts = {
 
 local hud: Hud = nil
 local localPlayer = Players.LocalPlayer
+
+-- Create the controller object first
+local TrackHUDController = {}
 
 function TrackHUDController:OnAwake()
 	if not hud then
@@ -69,4 +69,12 @@ function TrackHUDController:GetUI()
 	assert(hud.ScreenGui.ResetOnSpawn == false, "UI should not reset on spawn")
 end
 
-return TrackHUDController
+function TrackHUDController:GetTimeTexts(): TimerTexts
+	if not hud then
+		self:GetUI()
+	end
+
+	return hud.Timer
+end
+
+return LifetimeObject.extend(TrackHUDController, "TrackHUDController")
