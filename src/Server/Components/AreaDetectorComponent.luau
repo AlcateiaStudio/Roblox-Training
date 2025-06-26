@@ -42,6 +42,7 @@ function AreaDetector:Start()
 	self.Signals = {
 		Entered = Signal.new(),
 		Left = Signal.new(),
+		OnCharacterAdded = Signal.new(),
 	}
 
 	-- Check for existing players
@@ -93,14 +94,19 @@ function AreaDetector:Stop()
 end
 
 function AreaDetector:_OnCharacterAdded(player: Player, character: Model)
-	self.charactersToDetect[player] = character.PrimaryPart
+	local parts = self.Signals.OnCharacterAdded:Fire(player, character)
+	if not parts or #parts == 0 then
+		self.charactersToDetect[player] = { character.PrimaryPart }
+	else
+		self.charactersToDetect[player] = parts
+	end
 	self:_UpdateOverlapParams()
 end
 
 function AreaDetector:_UpdateOverlapParams()
 	local filterList = {}
-	for _, rootPart in pairs(self.charactersToDetect) do
-		table.insert(filterList, rootPart)
+	for _, parts in pairs(self.charactersToDetect) do
+		table.insert(filterList, parts)
 	end
 	areaDetectorOverlapParams.FilterDescendantsInstances = filterList
 end
@@ -115,13 +121,15 @@ function AreaDetector:_OnHeartbeat()
 	local currentPlayersInArea = {}
 
 	for _, part in ipairs(nearbyParts) do
-		for player, rootPart in pairs(self.charactersToDetect) do
-			if part == rootPart then
-				currentPlayersInArea[player] = rootPart
-				if not self.charactersInArea[player] then
-					self.charactersInArea[player] = rootPart
-					table.insert(self.playersInArea, player)
-					self.Signals.Entered:Fire(player)
+		for player, parts in pairs(self.charactersToDetect) do
+			for _, partToDetect in ipairs(parts) do
+				if part == partToDetect then
+					currentPlayersInArea[player] = partToDetect
+					if not self.charactersInArea[player] then
+						self.charactersInArea[player] = partToDetect
+						table.insert(self.playersInArea, player)
+						self.Signals.Entered:Fire(player)
+					end
 				end
 			end
 		end
