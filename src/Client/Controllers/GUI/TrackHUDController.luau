@@ -11,6 +11,7 @@ export type Hud = {
 	Placement: TextLabel,
 	Speed: TextLabel,
 	Timer: TimerTexts,
+	TrackImage: ImageLabel,
 }
 
 export type TimerTexts = {
@@ -29,15 +30,6 @@ function TrackHUDController:OnAwake()
 	if not hud then
 		TrackHUDController:GetUI()
 	end
-
-	local function onTimerChange(timer: number)
-		hud.Timer.Minutes.Text = string.format("%02d", math.floor(timer / 60))
-		hud.Timer.Seconds.Text = string.format("%02d", math.floor(timer % 60))
-		hud.Timer.Milliseconds.Text = string.format("%02d", math.floor((timer % 1) * 100))
-	end
-
-	self.trackClock = Timer.new(nil, nil, onTimerChange, "Timer", false)
-	self.trackClock:StartTimer(0)
 end
 
 function TrackHUDController:OnStart() end
@@ -51,19 +43,23 @@ function TrackHUDController:GetUI()
 		Placement = nil,
 		Speed = nil,
 		Timer = nil,
+		TrackImage = nil,
 	}
 
 	local playerGui = localPlayer:WaitForChild("PlayerGui")
 	hud.ScreenGui = playerGui:WaitForChild("TrackHUD")
 	local configuration = hud.ScreenGui:WaitForChild("Configuration") :: Configuration
-	local Minutes = configuration:WaitForChild("MinutesText") :: ObjectValue
-	local Seconds = configuration:WaitForChild("SecondsText") :: ObjectValue
-	local Milliseconds = configuration:WaitForChild("MiliSecondsText") :: ObjectValue
+	local minutes = configuration:WaitForChild("MinutesText") :: ObjectValue
+	local seconds = configuration:WaitForChild("SecondsText") :: ObjectValue
+	local milliseconds = configuration:WaitForChild("MiliSecondsText") :: ObjectValue
 	hud.Timer = {
-		Minutes = Minutes.Value :: TextLabel,
-		Seconds = Seconds.Value :: TextLabel,
-		Milliseconds = Milliseconds.Value :: TextLabel,
+		Minutes = minutes.Value :: TextLabel,
+		Seconds = seconds.Value :: TextLabel,
+		Milliseconds = milliseconds.Value :: TextLabel,
 	}
+
+	local trackImage = configuration:WaitForChild("TrackImage") :: ObjectValue
+	hud.TrackImage = trackImage.Value :: ImageLabel
 
 	-- Validation
 	assert(hud.ScreenGui.ResetOnSpawn == false, "UI should not reset on spawn")
@@ -75,6 +71,14 @@ function TrackHUDController:GetTimeTexts(): TimerTexts
 	end
 
 	return hud.Timer
+end
+
+function TrackHUDController:GetTrackImage(): ImageLabel
+	if not hud then
+		self:GetUI()
+	end
+
+	return hud.TrackImage
 end
 
 return LifetimeObject.extend(TrackHUDController, "TrackHUDController")
