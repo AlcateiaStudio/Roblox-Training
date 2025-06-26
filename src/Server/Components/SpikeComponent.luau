@@ -11,15 +11,20 @@ local AreaDetectorComponent = require(ServerScriptService.Server.Components.Area
 
 local SpikeComponent = Component.new({ Tag = "Spike", Extensions = {} })
 
+local function onCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
+	return nil --TODO: Retornar aqui quais partes você quer trackear
+end
+
 function SpikeComponent:Start()
-	AreaDetectorComponent:WaitForInstance(self.instance, TIME_OUT)
+	AreaDetectorComponent:WaitForInstance(self.Instance, TIME_OUT)
 		:andThen(function(component)
 			print("Spike contains a valid area detector component: ", component)
 			self.spikeAreaDetector = component
+			self.spikeAreaDetector.Signals.OnCharacterAdded:Connect(onCharacterAdded_GetNecessaryPartsToTrack)
 			self:SetUpAreaDetectorEvents()
 		end)
 		:catch(function(err)
-			warn("SpikeComponent failed to find AreaDetectorComponent in instance:", self.instance, err)
+			warn("SpikeComponent failed to find AreaDetectorComponent in instance:", self.Instance, err)
 			return nil
 		end)
 end
@@ -37,6 +42,7 @@ function SpikeComponent:ReduceHP(player: Player)
 		return
 	end
 
+	print(`SpikeComponent: Reducing HP for player {player.Name}`)
 	Net.PlayerCollidedWithSpike.Fire(player, DAMAGE)
 end
 
