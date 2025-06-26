@@ -8,3 +8,10 @@ event RaceStarted {
     call: SingleSync,
     data: string
 }
+
+event PlayerCollidedWithSpike {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: u8
+}

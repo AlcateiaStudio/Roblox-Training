@@ -151,6 +151,7 @@ local Queue: any = {
 }
 
 Queue.Reliable[0] = table.create(256)
+Queue.Reliable[1] = table.create(256)
 local function ReadEVENT_RaceStarted(): (string)
 	-- Read BLOCK: 2 bytes
 	local BLOCK_START = Read(2)
@@ -159,10 +160,20 @@ local function ReadEVENT_RaceStarted(): (string)
 	return Value
 end
 
+local function ReadEVENT_PlayerCollidedWithSpike(): (number)
+	-- Read BLOCK: 1 bytes
+	local BLOCK_START = Read(1)
+	local Value = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
 	RaceStarted = {
+		On = NOOP
+	},
+	PlayerCollidedWithSpike = {
 		On = NOOP
 	},
 	})
@@ -212,6 +223,16 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				end
 				table.insert(Queue.Reliable[0], {Value} :: {any})
 			end
+		elseif Index == 1 then
+			local Value: number = ReadEVENT_PlayerCollidedWithSpike()
+			if Events.Reliable[1] ~= nil then
+				Events.Reliable[1](Value)
+			else
+				if #Queue.Reliable[1] > 256 then
+					warn("[Blink]: Event queue of \"PlayerCollidedWithSpike\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[1], {Value} :: {any})
+			end
 		end
 	end
 end)
@@ -242,6 +263,20 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Reliable[0] == Listener then
 					Events.Reliable[0] = nil
+				end
+			end
+		end
+	},
+	PlayerCollidedWithSpike = {
+		On = function(Listener: (Value: number) -> ()): () -> ()
+			Events.Reliable[1] = Listener
+			for Index, Arguments in Queue.Reliable[1] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[1] = {}
+			return function (): ()
+				if Events.Reliable[1] == Listener then
+					Events.Reliable[1] = nil
 				end
 			end
 		end

@@ -161,10 +161,23 @@ local function WriteEVENT_RaceStarted(Value: string): ()
 	buffer.writestring(SendBuffer, SendOffset, Value, Length)
 end
 
+local function WriteEVENT_PlayerCollidedWithSpike(Value: number): ()
+	-- Allocate BLOCK: 2 bytes
+	local BLOCK_START = Allocate(2)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 1, Value)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
 	RaceStarted = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	PlayerCollidedWithSpike = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -279,6 +292,52 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value: string): ()
 			Load()
 			WriteEVENT_RaceStarted(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	PlayerCollidedWithSpike = {
+		Fire = function(Player: Player, Value: number): ()
+			Load(PlayersMap[Player])
+			WriteEVENT_PlayerCollidedWithSpike(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: number): ()
+			Load()
+			WriteEVENT_PlayerCollidedWithSpike(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: number): ()
+			Load()
+			WriteEVENT_PlayerCollidedWithSpike(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: number): ()
+			Load()
+			WriteEVENT_PlayerCollidedWithSpike(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then
