@@ -1,8 +1,8 @@
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local Net = require(ServerScriptService.Server.Net)
 local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
-
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
 local Players_Quantities_To_Start = 1
@@ -19,6 +19,7 @@ local AreaDetectorStartRaceComponenteInstance
 local waitingForTP = true
 local waitingToStarRace = false
 local waitinfForRaceFinish = false
+local listaDePlayers = {}
 
 function OnStart()
 	AreaDetectorStartRaceGameObject = workspace:WaitForChild("AreaDetectorTest", 10) :: Model
@@ -34,6 +35,7 @@ function IncreaseTime(deltaTime)
 	CurrentTimeToTP += deltaTime
 	print(`Increaseing time {CurrentTimeToTP}`)
 	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
+		listaDePlayers = AreaDetectorStartRaceComponenteInstance.playersInArea
 		MatchManagerModule:AdjustPositionToStarRace(AreaDetectorStartRaceComponenteInstance, TransformsToStarRace)
 		print("Reached max time to star race")
 		CurrentTimeToTP = 0
@@ -52,6 +54,7 @@ function StartRaceRoutine(deltaTime)
 	--TODO Destravar o player
 	waitingToStarRace = false
 	waitinfForRaceFinish = true
+	Net.RaceStarted.FireList(listaDePlayers, "Hello World!")
 end
 
 function _OnHeartbeat(deltaTime)
