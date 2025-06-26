@@ -33,9 +33,9 @@ end
 
 function IncreaseTime(deltaTime)
 	CurrentTimeToTP += deltaTime
-	print(`Increaseing time {CurrentTimeToTP}`)
+	print(`Increasing time {CurrentTimeToTP}`)
 	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
-		listaDePlayers = AreaDetectorStartRaceComponenteInstance.playersInArea
+		listaDePlayers = table.clone(AreaDetectorStartRaceComponenteInstance.playersInArea)
 		MatchManagerModule:AdjustPositionToStarRace(AreaDetectorStartRaceComponenteInstance, TransformsToStarRace)
 		print("Reached max time to star race")
 		CurrentTimeToTP = 0
@@ -54,6 +54,9 @@ function StartRaceRoutine(deltaTime)
 	--TODO Destravar o player
 	waitingToStarRace = false
 	waitinfForRaceFinish = true
+	for _, player in ipairs(listaDePlayers) do
+		print(`Player {player.Name} is ready to race`)
+	end
 	Net.RaceStarted.FireList(listaDePlayers, "Hello World!")
 end
 

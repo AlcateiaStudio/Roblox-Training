@@ -9,9 +9,11 @@ local Net = require(ReplicatedStorage.Client.Net)
 local TrackHUDTimeUIController = {}
 
 function TrackHUDTimeUIController:OnStart()
+	print("ONSTART CHAMADO")
+
 	Net.RaceStarted.On(function(value)
 		print(value)
-		self:OnRaceStarted()
+		TrackHUDTimeUIController:OnRaceStarted()
 	end)
 end
 
