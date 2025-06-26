@@ -1,0 +1,10 @@
+-- these can be ignored if you are using the studio plugin
+option ClientOutput = "src/Client/Net"
+option ServerOutput = "src/Server/Net"
+ 
+event RaceStarted {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: string
+}
