@@ -9,6 +9,7 @@ local localPlayer = Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local humanoid = character:FindFirstChildOfClass("Humanoid")
 
+local PlayerState = { Normal = 0, TakingDamage = 1, Static = 3 }
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand" }
 
 local speedBase = 10
@@ -16,7 +17,14 @@ local speedMax = 100
 local acceleration = 12
 local jumpAccelerationPercentage = 0.3
 
+local knockBackSpeed = 20
+local knockBackDirection: Vector3 = Vector3.zero
+local knockBackTime = 0
+local knockBackTimeMax = 1
+
+local playerState = PlayerState.Normal
 local collidedInThisFrame = false
+local canPlayerMove = true
 
 local function OnCharacterCollided(part: BasePart)
 	if collidedInThisFrame == true then
@@ -40,17 +48,23 @@ local function SubscribeToBodyPartsEvents()
 	end
 end
 
-function PlayerMovement:OnAwake()
-	SubscribeToBodyPartsEvents()
+local function SetCanPlayerMove(_canPlayerMove)
+	canPlayerMove = _canPlayerMove
+
+	humanoid.AutoRotate = canPlayerMove
+
+	if _canPlayerMove == false then
+		humanoid.WalkSpeed = 0
+	end
 end
 
-function PlayerMovement:OnStart() end
+local function SetPlayerState(_playerState: number)
+	playerState = _playerState
 
-function PlayerMovement:OnDestroy() end
+	SetCanPlayerMove(playerState == PlayerState.Normal)
+end
 
-local function Update(time, deltaTime)
-	collidedInThisFrame = false
-
+local function UpdateVelocity(deltaTime)
 	local isMoving = humanoid.MoveDirection.Magnitude > 0
 	local isJumping = humanoid:GetState() == Enum.HumanoidStateType.Freefall
 	local _acceleration
@@ -71,7 +85,49 @@ local function Update(time, deltaTime)
 
 	humanoid.WalkSpeed += _acceleration * deltaTime
 
-	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, 0, speedMax)
+	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, speedMax)
+end
+
+local function DoKnockBack(deltaTime)
+	humanoid.WalkSpeed = knockBackSpeed
+	humanoid:Move(knockBackDirection)
+	humanoid.WalkSpeed = 0
+
+	knockBackTime -= deltaTime
+
+	if knockBackTime <= 0 then
+		SetPlayerState(PlayerState.Normal)
+	end
+end
+
+function PlayerMovement:TakeDamage(direction: Vector3)
+	if playerState == PlayerState.Static then
+		return
+	end
+
+	SetPlayerState(PlayerState.TakingDamage)
+	knockBackDirection = Vector3.new(direction.X, 0, direction.Z)
+	knockBackTime = knockBackTimeMax
+
+	--TODO: perder moedas
+end
+
+function PlayerMovement:OnAwake()
+	SubscribeToBodyPartsEvents()
+end
+
+function PlayerMovement:OnStart() end
+
+function PlayerMovement:OnDestroy() end
+
+local function Update(time, deltaTime)
+	collidedInThisFrame = false
+
+	if playerState == PlayerState.Normal then
+		UpdateVelocity(deltaTime)
+	elseif playerState == PlayerState.TakingDamage then
+		DoKnockBack()
+	end
 end
 
 RunService.Stepped:Connect(Update)
