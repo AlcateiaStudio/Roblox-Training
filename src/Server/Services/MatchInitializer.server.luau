@@ -4,14 +4,20 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
 
 local Max_Player_To_Run = 4
-local Players_Quantities_To_Start = 2
-local Time_Max_To_Await = 3
-local CurrentTime = 0
+local Players_Quantities_To_Start = 1
+local Time_Max_To_Await_To_TP = 3
+local Time_Max_To_Await_To_Star_Race = 3
+local CurrentTimeToTP = 0
+local CurrentTimeToStarRace = 0
 
 local TransformsToStarRace = {}
 
 local AreaDetectorTestGameObject: Model
 local AreaDetectorComponenteInstance
+
+local waitingForTP = true
+local waitingToStarRace = false
+local waitinfForRaceFinish = false
 
 function OnStart()
 	AreaDetectorTestGameObject = workspace:WaitForChild("AreaDetectorTest", 10) :: Model
@@ -39,30 +45,36 @@ function AdjustPositionToStarRace()
 end
 
 function IncreaseTime(deltaTime)
-	CurrentTime += deltaTime
-	print(`Increaseing time {CurrentTime}`)
-	if CurrentTime >= Time_Max_To_Await then
+	CurrentTimeToTP += deltaTime
+	print(`Increaseing time {CurrentTimeToTP}`)
+	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
 		AdjustPositionToStarRace()
 		print("Reached max time to star race")
-		CurrentTime = 0
+		CurrentTimeToTP = 0
+		waitingForTP = false
+		waitingToStarRace = true
 	end
 end
 
 function _OnHeartbeat(deltaTime)
-	if #AreaDetectorComponenteInstance.playersInArea >= Players_Quantities_To_Start then
-		IncreaseTime(deltaTime)
-	else
-		CurrentTime = 0
-	end
-end
-
-function Contains(table, element)
-	for _, valor in ipairs(table) do
-		if valor == element then
-			return true
+	if waitingForTP == true then
+		if #AreaDetectorComponenteInstance.playersInArea >= Players_Quantities_To_Start then
+			IncreaseTime(deltaTime)
+		else
+			CurrentTimeToTP = 0
 		end
+	elseif waitingToStarRace then
+		if CurrentTimeToStarRace < Time_Max_To_Await_To_Star_Race then
+			CurrentTimeToStarRace += deltaTime
+			print(`Time To Start Running :{CurrentTimeToStarRace}`)
+			--TODO CHAMAR HUD 321 e travar o player
+			return
+		end
+
+		--TODO Destravar o player
+		waitingToStarRace = false
+		waitinfForRaceFinish = true
 	end
-	return false
 end
 
 OnStart()
