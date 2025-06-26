@@ -23,6 +23,10 @@ local function OnCharacterCollided(part: BasePart)
 		return
 	end
 
+	if part:HasTag("Environment") == false then
+		return
+	end
+
 	collidedInThisFrame = true
 
 	humanoid.WalkSpeed = speedBase
@@ -54,11 +58,15 @@ local function Update(time, deltaTime)
 	if isMoving == true then
 		_acceleration = acceleration
 	else
-		_acceleration = acceleration * -1
+		_acceleration = 0
 	end
 
 	if isJumping == true then
 		_acceleration *= jumpAccelerationPercentage
+	end
+
+	if isMoving == false and isJumping == false then
+		humanoid.WalkSpeed = speedBase
 	end
 
 	humanoid.WalkSpeed += _acceleration * deltaTime
