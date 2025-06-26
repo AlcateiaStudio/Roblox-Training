@@ -40,7 +40,7 @@ local function OnCharacterCollided(part: BasePart)
 	humanoid.WalkSpeed = speedBase
 end
 
-local function SubscribeToBodyPartsEvents()
+function PlayerMovement:SubscribeToBodyPartsEvents()
 	for i, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart: BasePart = character:FindFirstChild(v)
 
@@ -48,7 +48,7 @@ local function SubscribeToBodyPartsEvents()
 	end
 end
 
-local function SetCanPlayerMove(_canPlayerMove)
+function PlayerMovement:SetCanPlayerMove(_canPlayerMove)
 	canPlayerMove = _canPlayerMove
 
 	humanoid.AutoRotate = canPlayerMove
@@ -58,13 +58,13 @@ local function SetCanPlayerMove(_canPlayerMove)
 	end
 end
 
-local function SetPlayerState(_playerState: number)
+function PlayerMovement:SetPlayerState(_playerState: number)
 	playerState = _playerState
 
-	SetCanPlayerMove(playerState == PlayerState.Normal)
+	self:SetCanPlayerMove(playerState == PlayerState.Normal)
 end
 
-local function UpdateVelocity(deltaTime)
+function PlayerMovement:UpdateVelocity(deltaTime)
 	local isMoving = humanoid.MoveDirection.Magnitude > 0
 	local isJumping = humanoid:GetState() == Enum.HumanoidStateType.Freefall
 	local _acceleration
@@ -88,7 +88,7 @@ local function UpdateVelocity(deltaTime)
 	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, speedMax)
 end
 
-local function DoKnockBack(deltaTime)
+function PlayerMovement:DoKnockBack(deltaTime)
 	humanoid.WalkSpeed = knockBackSpeed
 	humanoid:Move(knockBackDirection)
 	humanoid.WalkSpeed = 0
@@ -96,7 +96,7 @@ local function DoKnockBack(deltaTime)
 	knockBackTime -= deltaTime
 
 	if knockBackTime <= 0 then
-		SetPlayerState(PlayerState.Normal)
+		self:SetPlayerState(PlayerState.Normal)
 	end
 end
 
@@ -105,7 +105,7 @@ function PlayerMovement:TakeDamage(direction: Vector3)
 		return
 	end
 
-	SetPlayerState(PlayerState.TakingDamage)
+	self:SetPlayerState(PlayerState.TakingDamage)
 	knockBackDirection = Vector3.new(direction.X, 0, direction.Z)
 	knockBackTime = knockBackTimeMax
 
@@ -113,7 +113,7 @@ function PlayerMovement:TakeDamage(direction: Vector3)
 end
 
 function PlayerMovement:OnAwake()
-	SubscribeToBodyPartsEvents()
+	self:SubscribeToBodyPartsEvents()
 end
 
 function PlayerMovement:OnStart() end
@@ -124,9 +124,9 @@ local function Update(time, deltaTime)
 	collidedInThisFrame = false
 
 	if playerState == PlayerState.Normal then
-		UpdateVelocity(deltaTime)
+		PlayerMovement:UpdateVelocity(deltaTime)
 	elseif playerState == PlayerState.TakingDamage then
-		DoKnockBack()
+		PlayerMovement:DoKnockBack(deltaTime)
 	end
 end
 
