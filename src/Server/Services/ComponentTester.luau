@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.AreaDetectorComponent)
 
-local ComponentTester = LifetimeObject.new()
+local ComponentTester = {}
 ComponentTester.Name = "ComponentTester"
 
 function ComponentTester:OnStart()
@@ -26,4 +26,4 @@ function ComponentTester:OnStart()
 		end)
 end
 
-return ComponentTester
+return LifetimeObject.extend(ComponentTester, "ComponentTester")

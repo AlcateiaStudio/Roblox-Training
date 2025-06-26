@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
-local PlayerMovement = LifetimeObject.new()
+local PlayerMovement = {}
 
 local RunService = game:GetService("RunService")
 
@@ -132,4 +132,4 @@ end
 
 RunService.Stepped:Connect(Update)
 
-return PlayerMovement
+return LifetimeObject.extend(PlayerMovement, "PlayerMovement")

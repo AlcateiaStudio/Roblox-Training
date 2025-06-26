@@ -12,20 +12,30 @@ local function printDebug(...)
 	end
 end
 
--- Create a new lifetime object
-function LifetimeObject.new(name: string?)
-	local self = setmetatable({}, LifetimeObject)
+function LifetimeObject.extend<T>(object: T, name: string?): T
+	-- Copy all LifetimeObject methods
+	for key, value in pairs(LifetimeObject) do
+		if type(value) == "function" and key ~= "new" and key ~= "extend" then
+			(object :: any)[key] = value
+		end
+	end
+
+	-- Set up metatable for inheritance
+	setmetatable(object :: any, LifetimeObject)
 
 	-- Set the name for debugging purposes
-	self.Name = name or "UnnamedLifetimeObject"
+	local anyObject = object :: any
+	anyObject.Name = name or "UnnamedLifetimeObject"
 
 	-- Register this object
-	table.insert(lifetimeObjects, self)
+	table.insert(lifetimeObjects, anyObject)
 
-	return self
+	return anyObject
 end
 
--- Lifecycle methods (to be overridden by inheriting objects)
+--------------------------------------------------------------------------------
+--// Lifecycle Methods //--
+--------------------------------------------------------------------------------
 function LifetimeObject:OnAwake()
 	-- Override this method in your controllers/services
 end
@@ -38,7 +48,9 @@ function LifetimeObject:OnDestroy()
 	-- Override this method in your controllers/services
 end
 
--- Static methods to manage all lifetime objects
+--------------------------------------------------------------------------------
+--// Static Methods //--
+--------------------------------------------------------------------------------
 function LifetimeObject.AwakeAll()
 	-- LifetimeObject.SetDebug(true) -- Enable when debugging
 	printDebug("🚀 Starting OnAwake phase...")
@@ -84,23 +96,18 @@ function LifetimeObject.DestroyAll()
 	end
 	printDebug("✅ OnDestroy phase completed")
 
-	-- Clear the registry
 	lifetimeObjects = {}
 end
 
--- Get all registered objects (for debugging)
+--------------------------------------------------------------------------------
+--// Helpers //--
+--------------------------------------------------------------------------------
 function LifetimeObject.GetAll()
 	return lifetimeObjects
 end
 
--- Enable/disable debug mode
 function LifetimeObject.SetDebug(enabled: boolean)
 	debug = enabled
-end
-
--- Get current debug state
-function LifetimeObject.GetDebug()
-	return debug
 end
 
 return LifetimeObject
