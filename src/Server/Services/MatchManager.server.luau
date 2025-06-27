@@ -5,9 +5,10 @@ local Net = require(ServerScriptService.Server.Net)
 local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
-local Players_Quantities_To_Start = 1
+local MinimunPlayersToStart = 2
 local Time_Max_To_Await_To_TP = 3
 local Time_Max_To_Await_To_Star_Race = 3
+
 local CurrentTimeToTP = 0
 local CurrentTimeToStarRace = 0
 
@@ -70,7 +71,7 @@ end
 function FinishRace()
 	waitingForRaceFinish = false
 	waitingForTP = true
-	print("Race Finished")
+	print(`{AreaDetectorFinishRaceComponenteInstance.playersInArea[1]} Won The Race`)
 end
 
 function WaitFinishRace()
@@ -81,7 +82,7 @@ end
 
 function _OnHeartbeat(deltaTime)
 	if waitingForTP == true then
-		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= Players_Quantities_To_Start then
+		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= MinimunPlayersToStart then
 			IncreaseTime(deltaTime)
 		else
 			CurrentTimeToTP = 0
