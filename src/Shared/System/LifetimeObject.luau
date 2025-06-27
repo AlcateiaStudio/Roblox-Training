@@ -13,10 +13,12 @@ local function printDebug(...)
 end
 
 function LifetimeObject.extend<T>(object: T, name: string?): T
-	-- Copy all LifetimeObject methods
+	-- Copy all LifetimeObject methods, but don't overwrite existing methods
 	for key, value in pairs(LifetimeObject) do
-		if type(value) == "function" and key ~= "new" and key ~= "extend" then
-			(object :: any)[key] = value
+		if type(value) == "function" and key ~= "extend" then
+			if (object :: any)[key] == nil then
+				(object :: any)[key] = value
+			end
 		end
 	end
 
