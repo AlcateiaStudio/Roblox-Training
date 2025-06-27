@@ -8,7 +8,7 @@ local AreaDetectorComponent = require(ServerScriptService.Server.Components.Area
 local ObjectThatCausesDamageComponent = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
 
 local timeOut = 2
-local collisionBodyPartsNames = { "UpperTorso", "LeftFoot", "RightFoot" }
+local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
