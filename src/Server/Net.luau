@@ -28,127 +28,127 @@ local RecieveInstanceCursor = 0
 local Null = newproxy()
 
 type Entry = {
-    value: any,
-    next: Entry?
+	value: any,
+	next: Entry?,
 }
 
 type Queue = {
-    head: Entry?,
-    tail: Entry?
+	head: Entry?,
+	tail: Entry?,
 }
 
 type BufferSave = {
-    Size: number, 
-    Cursor: number, 
-    Buffer: buffer, 
-    Instances: {Instance}
+	Size: number,
+	Cursor: number,
+	Buffer: buffer,
+	Instances: { Instance },
 }
 
 local function Read(Bytes: number)
-    local Offset = RecieveCursor
-    RecieveCursor += Bytes
-    return Offset
+	local Offset = RecieveCursor
+	RecieveCursor += Bytes
+	return Offset
 end
 
 local function Save(): BufferSave
-    return {
-        Size = SendSize,
-        Cursor = SendCursor,
-        Buffer = SendBuffer,
-        Instances = SendInstances
-    }
+	return {
+		Size = SendSize,
+		Cursor = SendCursor,
+		Buffer = SendBuffer,
+		Instances = SendInstances,
+	}
 end
 
 local function Load(Save: BufferSave?)
-    if Save then
-        SendSize = Save.Size
-        SendCursor = Save.Cursor
-        SendOffset = Save.Cursor
-        SendBuffer = Save.Buffer
-        SendInstances = Save.Instances
-        return
-    end
+	if Save then
+		SendSize = Save.Size
+		SendCursor = Save.Cursor
+		SendOffset = Save.Cursor
+		SendBuffer = Save.Buffer
+		SendInstances = Save.Instances
+		return
+	end
 
-    SendSize = 64
-    SendCursor = 0
-    SendOffset = 0
-    SendBuffer = buffer.create(64)
-    SendInstances = {}
+	SendSize = 64
+	SendCursor = 0
+	SendOffset = 0
+	SendBuffer = buffer.create(64)
+	SendInstances = {}
 end
 
 local function Invoke()
-    if Invocations == 255 then
-        Invocations = 0
-    end
+	if Invocations == 255 then
+		Invocations = 0
+	end
 
-    local Invocation = Invocations
-    Invocations += 1
-    return Invocation
+	local Invocation = Invocations
+	Invocations += 1
+	return Invocation
 end
 
 local function Allocate(Bytes: number)
-    local InUse = (SendCursor + Bytes)
-    if InUse > SendSize then
-        --> Avoid resizing the buffer for every write
-        while InUse > SendSize do
-            SendSize *= 1.5
-        end
+	local InUse = (SendCursor + Bytes)
+	if InUse > SendSize then
+		--> Avoid resizing the buffer for every write
+		while InUse > SendSize do
+			SendSize *= 1.5
+		end
 
-        local Buffer = buffer.create(SendSize)
-        buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
-        SendBuffer = Buffer
-    end
+		local Buffer = buffer.create(SendSize)
+		buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+		SendBuffer = Buffer
+	end
 
-    SendOffset = SendCursor
-    SendCursor += Bytes
-    
-    return SendOffset
+	SendOffset = SendCursor
+	SendCursor += Bytes
+
+	return SendOffset
 end
 
 local function CreateQueue(): Queue
-    return {
-        head = nil,
-        tail = nil
-    }
+	return {
+		head = nil,
+		tail = nil,
+	}
 end
 
 local function Pop(queue: Queue): any
-    local head = queue.head
-    if head == nil then
-        return
-    end
+	local head = queue.head
+	if head == nil then
+		return
+	end
 
-    queue.head = head.next
-    return head.value
+	queue.head = head.next
+	return head.value
 end
 
 local function Push(queue: Queue, value: any)
-    local entry: Entry = {
-        value = value,
-        next = nil
-    }
+	local entry: Entry = {
+		value = value,
+		next = nil,
+	}
 
-    if queue.tail ~= nil then
-        queue.tail.next = entry
-    end
+	if queue.tail ~= nil then
+		queue.tail.next = entry
+	end
 
-    queue.tail = entry
+	queue.tail = entry
 
-    if queue.head == nil then
-        queue.head = entry
-    end
+	if queue.head == nil then
+		queue.head = entry
+	end
 end
 
 local Calls = table.create(256)
 
 local Events: any = {
-    Reliable = table.create(256),
-    Unreliable = table.create(256)
+	Reliable = table.create(256),
+	Unreliable = table.create(256),
 }
 
 local Queue: any = {
-    Reliable = table.create(256),
-    Unreliable = table.create(256)
+	Reliable = table.create(256),
+	Unreliable = table.create(256),
 }
 
 local function WriteEVENT_RaceStarted(Value: string): ()
@@ -161,103 +161,124 @@ local function WriteEVENT_RaceStarted(Value: string): ()
 	buffer.writestring(SendBuffer, SendOffset, Value, Length)
 end
 
-local function WriteEVENT_PlayerTakeDamage(Value: Vector3): ()
-	-- Allocate BLOCK: 25 bytes
-	local BLOCK_START = Allocate(25)
+local function WriteEVENT_PlayerTakeDamage(Value1: number, Value2: Vector3): ()
+	-- Allocate BLOCK: 27 bytes
+	local BLOCK_START = Allocate(27)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
-	local Vector = Value
-	buffer.writef64(SendBuffer, BLOCK_START + 1, Vector.X)
-	buffer.writef64(SendBuffer, BLOCK_START + 9, Vector.Y)
-	buffer.writef64(SendBuffer, BLOCK_START + 17, Vector.Z)
+	if Value1 > 65504 then
+		buffer.writeu16(SendBuffer, BLOCK_START + 1, 0b0_11111_0000000000)
+	elseif Value1 < -65504 then
+		buffer.writeu16(SendBuffer, BLOCK_START + 1, 0b1_11111_0000000000)
+	elseif Value1 ~= Value1 then
+		buffer.writeu16(SendBuffer, BLOCK_START + 1, 0b1_11111_0000000001)
+	elseif Value1 == 0 then
+		buffer.writeu16(SendBuffer, BLOCK_START + 1, 0)
+	else
+		local float = Value1
+		local Abosulte = math.abs(float)
+		local Interval = math.ldexp(1, math.floor(math.log(Abosulte, 2)) - 10)
+		local RoundedValue = (Abosulte // Interval) * Interval
+		local Fraction, Exponent = math.frexp(RoundedValue)
+		Exponent += 14
+		local Mantissa = math.round(
+			if Exponent <= 0 then Fraction * 0x400 / math.ldexp(1, math.abs(Exponent)) else Fraction * 0x800
+		) % 0x400
+		local Result = Mantissa + math.max(Exponent, 0) * 0x400 + if float < 0 then 0x8000 else 0
+		buffer.writeu16(SendBuffer, BLOCK_START + 1, Result)
+	end
+	local Vector = Value2
+	buffer.writef64(SendBuffer, BLOCK_START + 3, Vector.X)
+	buffer.writef64(SendBuffer, BLOCK_START + 11, Vector.Y)
+	buffer.writef64(SendBuffer, BLOCK_START + 19, Vector.Z)
 end
 
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
-	RaceStarted = {
-		Fire = NOOP,
-		FireAll = NOOP,
-		FireList = NOOP,
-		FireExcept = NOOP
-	},
-	PlayerTakeDamage = {
-		Fire = NOOP,
-		FireAll = NOOP,
-		FireList = NOOP,
-		FireExcept = NOOP
-	},
+		RaceStarted = {
+			Fire = NOOP,
+			FireAll = NOOP,
+			FireList = NOOP,
+			FireExcept = NOOP,
+		},
+		PlayerTakeDamage = {
+			Fire = NOOP,
+			FireAll = NOOP,
+			FireList = NOOP,
+			FireExcept = NOOP,
+		},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
 end
 
 if not RunService:IsServer() then
-    error("Server network module can only be required from the server.")
+	error("Server network module can only be required from the server.")
 end
 
 local Reliable: RemoteEvent = ReplicatedStorage:FindFirstChild(BASE_EVENT_NAME .. "_RELIABLE_REMOTE") :: RemoteEvent
 if not Reliable then
-    local RemoteEvent = Instance.new("RemoteEvent")
-    RemoteEvent.Name = BASE_EVENT_NAME .. "_RELIABLE_REMOTE"
-    RemoteEvent.Parent = ReplicatedStorage
-    Reliable = RemoteEvent
+	local RemoteEvent = Instance.new("RemoteEvent")
+	RemoteEvent.Name = BASE_EVENT_NAME .. "_RELIABLE_REMOTE"
+	RemoteEvent.Parent = ReplicatedStorage
+	Reliable = RemoteEvent
 end
 
-local Unreliable: UnreliableRemoteEvent = ReplicatedStorage:FindFirstChild(BASE_EVENT_NAME .. "_UNRELIABLE_REMOTE") :: UnreliableRemoteEvent
+local Unreliable: UnreliableRemoteEvent =
+	ReplicatedStorage:FindFirstChild(BASE_EVENT_NAME .. "_UNRELIABLE_REMOTE") :: UnreliableRemoteEvent
 if not Unreliable then
-    local UnreliableRemoteEvent = Instance.new("UnreliableRemoteEvent")
-    UnreliableRemoteEvent.Name = BASE_EVENT_NAME .. "_UNRELIABLE_REMOTE"
-    UnreliableRemoteEvent.Parent = ReplicatedStorage
-    Unreliable = UnreliableRemoteEvent
+	local UnreliableRemoteEvent = Instance.new("UnreliableRemoteEvent")
+	UnreliableRemoteEvent.Name = BASE_EVENT_NAME .. "_UNRELIABLE_REMOTE"
+	UnreliableRemoteEvent.Parent = ReplicatedStorage
+	Unreliable = UnreliableRemoteEvent
 end
 
-local PlayersMap: {[Player]: BufferSave} = {}
+local PlayersMap: { [Player]: BufferSave } = {}
 
 Players.PlayerRemoving:Connect(function(Player)
-    PlayersMap[Player] = nil
+	PlayersMap[Player] = nil
 end)
 
 local function StepReplication()
-    for Player, Send in PlayersMap do
-        if Send.Cursor <= 0 then
-            continue
-        end
+	for Player, Send in PlayersMap do
+		if Send.Cursor <= 0 then
+			continue
+		end
 
-        local Buffer = buffer.create(Send.Cursor)
-        buffer.copy(Buffer, 0, Send.Buffer, 0, Send.Cursor)
-        Reliable:FireClient(Player, Buffer, Send.Instances)
+		local Buffer = buffer.create(Send.Cursor)
+		buffer.copy(Buffer, 0, Send.Buffer, 0, Send.Cursor)
+		Reliable:FireClient(Player, Buffer, Send.Instances)
 
-        Send.Size = 64
-        Send.Cursor = 0
-        Send.Buffer = buffer.create(64)
-        table.clear(Send.Instances)
-    end
+		Send.Size = 64
+		Send.Cursor = 0
+		Send.Buffer = buffer.create(64)
+		table.clear(Send.Instances)
+	end
 end
 RunService.Heartbeat:Connect(StepReplication)
-Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instances: {Instance})
+Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instances: { Instance })
 	RecieveCursor = 0
 	RecieveBuffer = Buffer
 	RecieveInstances = Instances
 	RecieveInstanceCursor = 0
 	local Size = buffer.len(RecieveBuffer)
-	while (RecieveCursor < Size) do
+	while RecieveCursor < Size do
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 	end
 end)
-Unreliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instances: {Instance})
+Unreliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instances: { Instance })
 	RecieveCursor = 0
 	RecieveBuffer = Buffer
 	RecieveInstances = Instances
 	RecieveInstanceCursor = 0
 	local Size = buffer.len(RecieveBuffer)
-	while (RecieveCursor < Size) do
+	while RecieveCursor < Size do
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 	end
 end)
-
 
 local Returns = table.freeze({
 	StepReplication = StepReplication,
@@ -280,7 +301,7 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireList = function(List: {Player}, Value: string): ()
+		FireList = function(List: { Player }, Value: string): ()
 			Load()
 			WriteEVENT_RaceStarted(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
@@ -309,14 +330,14 @@ local Returns = table.freeze({
 		end,
 	},
 	PlayerTakeDamage = {
-		Fire = function(Player: Player, Value: Vector3): ()
+		Fire = function(Player: Player, Value1: number, Value2: Vector3): ()
 			Load(PlayersMap[Player])
-			WriteEVENT_PlayerTakeDamage(Value)
+			WriteEVENT_PlayerTakeDamage(Value1, Value2)
 			PlayersMap[Player] = Save()
 		end,
-		FireAll = function(Value: Vector3): ()
+		FireAll = function(Value1: number, Value2: Vector3): ()
 			Load()
-			WriteEVENT_PlayerTakeDamage(Value)
+			WriteEVENT_PlayerTakeDamage(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				Load(PlayersMap[Player])
@@ -326,9 +347,9 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireList = function(List: {Player}, Value: Vector3): ()
+		FireList = function(List: { Player }, Value1: number, Value2: Vector3): ()
 			Load()
-			WriteEVENT_PlayerTakeDamage(Value)
+			WriteEVENT_PlayerTakeDamage(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in List do
 				Load(PlayersMap[Player])
@@ -338,9 +359,9 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireExcept = function(Except: Player, Value: Vector3): ()
+		FireExcept = function(Except: Player, Value1: number, Value2: Vector3): ()
 			Load()
-			WriteEVENT_PlayerTakeDamage(Value)
+			WriteEVENT_PlayerTakeDamage(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then

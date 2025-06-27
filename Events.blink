@@ -13,5 +13,5 @@ event PlayerTakeDamage {
     from: Server,
     type: Reliable,
     call: SingleSync,
-    data: vector<f64>
+    data: (f16, vector<f64>)
 }

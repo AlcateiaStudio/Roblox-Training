@@ -4,10 +4,15 @@ local PlayerMovement = {}
 
 local RunService = game:GetService("RunService")
 
+local Net = require(ReplicatedStorage.Client.Net)
+
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+local playerModule = require(localPlayer.PlayerScripts.PlayerModule)
+local controls = playerModule:GetControls()
 
 local PlayerState = { Normal = 0, TakingDamage = 1, Static = 3 }
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand" }
@@ -17,10 +22,9 @@ local speedMax = 100
 local acceleration = 12
 local jumpAccelerationPercentage = 0.3
 
-local knockBackSpeed = 20
 local knockBackDirection: Vector3 = Vector3.zero
 local knockBackTime = 0
-local knockBackTimeMax = 1
+local knockBackTimeMax = 0.4
 
 local playerState = PlayerState.Normal
 local collidedInThisFrame = false
@@ -38,6 +42,10 @@ local function OnCharacterCollided(part: BasePart)
 	collidedInThisFrame = true
 
 	humanoid.WalkSpeed = speedBase
+end
+
+local function OnPlayerTakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
+	PlayerMovement:TakeDamage(_knockBackSpeed, _knockBackDirection)
 end
 
 function PlayerMovement:SubscribeToBodyPartsEvents()
@@ -66,6 +74,12 @@ function PlayerMovement:SetPlayerState(_playerState: number)
 	playerState = _playerState
 
 	self:SetCanPlayerMove(playerState == PlayerState.Normal)
+
+	if playerState == PlayerState.TakingDamage then
+		controls:Disable()
+	else
+		controls:Enable()
+	end
 end
 
 function PlayerMovement:UpdateVelocity(deltaTime)
@@ -93,10 +107,6 @@ function PlayerMovement:UpdateVelocity(deltaTime)
 end
 
 function PlayerMovement:DoKnockBack(deltaTime)
-	humanoid.WalkSpeed = knockBackSpeed
-	humanoid:Move(knockBackDirection)
-	humanoid.WalkSpeed = 0
-
 	knockBackTime -= deltaTime
 
 	if knockBackTime <= 0 then
@@ -104,16 +114,25 @@ function PlayerMovement:DoKnockBack(deltaTime)
 	end
 end
 
-function PlayerMovement:TakeDamage(direction: Vector3)
+function PlayerMovement:TakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
 	if playerState == PlayerState.Static then
 		return
 	end
 
 	self:SetPlayerState(PlayerState.TakingDamage)
-	knockBackDirection = Vector3.new(direction.X, 0, direction.Z)
+
+	knockBackDirection = _knockBackDirection
 	knockBackTime = knockBackTimeMax
 
-	--TODO: perder moedas
+	humanoid.WalkSpeed = _knockBackSpeed
+	humanoid:Move(knockBackDirection, false)
+
+	humanoid.Jump = true
+
+	character.PrimaryPart.CFrame = CFrame.new(
+		character.PrimaryPart.Position,
+		character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1)
+	)
 end
 
 function PlayerMovement:OnAwake()
@@ -135,5 +154,7 @@ local function Update(time, deltaTime)
 end
 
 RunService.Stepped:Connect(Update)
+
+Net.PlayerTakeDamage.On(OnPlayerTakeDamage)
 
 return LifetimeObject.extend(PlayerMovement, "PlayerMovement")

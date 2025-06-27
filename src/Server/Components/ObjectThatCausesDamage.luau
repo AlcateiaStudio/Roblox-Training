@@ -10,6 +10,8 @@ local ObjectThatCausesDamageComponent = Component.new({ Tag = "ObjectThatCausesD
 local timeOut = 2
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
+local knockBackSpeed = 40
+
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
 
@@ -67,7 +69,7 @@ function ObjectThatCausesDamageComponent:CauseDamage(player: Player)
 	local collider: BasePart = self.areaDetector.collider
 	local knockBackDirection: Vector3 = character.PrimaryPart.CFrame.Position - collider.CFrame.Position
 
-	Net.PlayerTakeDamage.Fire(player, knockBackDirection)
+	Net.PlayerTakeDamage.Fire(player, knockBackSpeed, knockBackDirection)
 end
 
 return ObjectThatCausesDamageComponent

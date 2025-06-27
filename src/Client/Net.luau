@@ -160,14 +160,39 @@ local function ReadEVENT_RaceStarted(): (string)
 	return Value
 end
 
-local function ReadEVENT_PlayerTakeDamage(): (Vector3)
-	-- Read BLOCK: 24 bytes
-	local BLOCK_START = Read(24)
-	local X = buffer.readf64(RecieveBuffer, BLOCK_START + 0)
-	local Y = buffer.readf64(RecieveBuffer, BLOCK_START + 8)
-	local Z = buffer.readf64(RecieveBuffer, BLOCK_START + 16)
-	local Value = Vector3.new(X, Y, Z)
-	return Value
+local function ReadEVENT_PlayerTakeDamage(): (number, Vector3)
+	-- Read BLOCK: 26 bytes
+	local BLOCK_START = Read(26)
+	local Encoded = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	local Value1
+	local MantissaExponent = Encoded % 0x8000
+	if MantissaExponent == 0b0_11111_0000000000  then
+		if Encoded // 0x8000 == 1 then
+			Value1 = -math.huge
+		else
+			Value1 = math.huge
+		end
+	elseif MantissaExponent == 0b1_11111_0000000000   then
+		Value1 = 0 / 0
+	elseif MantissaExponent == 0b0_00000_0000000000   then
+		Value1 = 0
+	else
+		local Mantissa = MantissaExponent % 0x400
+		local Exponent = MantissaExponent // 0x400
+		local Fraction;
+		if Exponent == 0 then
+			Fraction = Mantissa / 0x400
+		else
+			Fraction = Mantissa / 0x800 + 0.5
+		end
+		local Result = math.ldexp(Fraction, Exponent - 14)
+		Value1 = if Encoded // 0x8000 == 1 then -Result else Result
+	end
+	local X = buffer.readf64(RecieveBuffer, BLOCK_START + 2)
+	local Y = buffer.readf64(RecieveBuffer, BLOCK_START + 10)
+	local Z = buffer.readf64(RecieveBuffer, BLOCK_START + 18)
+	local Value2 = Vector3.new(X, Y, Z)
+	return Value1, Value2
 end
 
 if not RunService:IsRunning() then
@@ -227,14 +252,14 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				table.insert(Queue.Reliable[0], {Value} :: {any})
 			end
 		elseif Index == 1 then
-			local Value: Vector3 = ReadEVENT_PlayerTakeDamage()
+			local Value1: number, Value2: Vector3 = ReadEVENT_PlayerTakeDamage()
 			if Events.Reliable[1] ~= nil then
-				Events.Reliable[1](Value)
+				Events.Reliable[1](Value1, Value2)
 			else
 				if #Queue.Reliable[1] > 256 then
 					warn("[Blink]: Event queue of \"PlayerTakeDamage\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[1], {Value} :: {any})
+				table.insert(Queue.Reliable[1], {Value1, Value2} :: {any})
 			end
 		end
 	end
@@ -271,7 +296,7 @@ local Returns = table.freeze({
 		end
 	},
 	PlayerTakeDamage = {
-		On = function(Listener: (Value: Vector3) -> ()): () -> ()
+		On = function(Listener: (Value1: number, Value2: Vector3) -> ()): () -> ()
 			Events.Reliable[1] = Listener
 			for Index, Arguments in Queue.Reliable[1] do
 				Listener(table.unpack(Arguments))
