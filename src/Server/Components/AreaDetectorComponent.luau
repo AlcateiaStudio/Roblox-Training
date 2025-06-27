@@ -107,7 +107,9 @@ end
 function AreaDetector:_UpdateOverlapParams()
 	local filterList = {}
 	for _, parts in pairs(self.charactersToDetect) do
-		table.insert(filterList, parts)
+		for _, part in ipairs(parts) do
+			table.insert(filterList, part)
+		end
 	end
 	areaDetectorOverlapParams.FilterDescendantsInstances = filterList
 end

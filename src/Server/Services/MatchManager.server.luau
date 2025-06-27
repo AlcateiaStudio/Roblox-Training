@@ -5,7 +5,7 @@ local Net = require(ServerScriptService.Server.Net)
 local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
-local MinimunPlayersToStart = 2
+local MinimunPlayersToStart = 1
 local Time_Max_To_Await_To_TP = 3
 local Time_Max_To_Await_To_Star_Race = 3
 
@@ -13,14 +13,16 @@ local CurrentTimeToTP = 0
 local CurrentTimeToStarRace = 0
 
 local TransformsToStarRace = {}
-
+local TransformsToPodium = {}
 local AreaDetectorStartRaceComponenteInstance
 local AreaDetectorFinishRaceComponenteInstance
 
 local waitingForTP = true
 local waitingToStarRace = false
 local waitingForRaceFinish = false
+local waitingForPodium = false
 local listaDePlayers = {}
+local listaDeCharacters = {}
 
 function OnStart()
 	local AreaDetectorStartRaceGameObject: Model = workspace:WaitForChild("AreaDetectorRunStart", 10) :: Model
@@ -36,7 +38,20 @@ function OnStart()
 		AreaDetectorFinishRaceComponenteInstance = component
 	end)
 
-	MatchManagerModule:GetPadsStartRace(TransformsToStarRace)
+	MatchManagerModule:GetChildsFromName(TransformsToStarRace, "StartRacePositionModel")
+	MatchManagerModule:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
+	MatchManagerModule.FinishPodium:Connect(FinishPodium)
+end
+
+function ResetRun()
+	waitingForTP = true
+	waitingToStarRace = false
+	waitingForRaceFinish = false
+	waitingForPodium = false
+end
+
+function FinishPodium()
+	ResetRun()
 end
 
 function IncreaseTime(deltaTime)
@@ -44,7 +59,9 @@ function IncreaseTime(deltaTime)
 	print(`Increasing time {CurrentTimeToTP}`)
 	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
 		listaDePlayers = table.clone(AreaDetectorStartRaceComponenteInstance.playersInArea)
-		MatchManagerModule:AdjustPositionToStarRace(AreaDetectorStartRaceComponenteInstance, TransformsToStarRace)
+		listaDeCharacters = table.clone(AreaDetectorStartRaceComponenteInstance.charactersInArea)
+
+		MatchManagerModule:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace)
 		print("Reached max time to star race")
 		CurrentTimeToTP = 0
 		waitingForTP = false
@@ -70,7 +87,8 @@ end
 
 function FinishRace()
 	waitingForRaceFinish = false
-	waitingForTP = true
+	waitingForPodium = true
+	MatchManagerModule:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium)
 	print(`{AreaDetectorFinishRaceComponenteInstance.playersInArea[1]} Won The Race`)
 end
 
@@ -82,6 +100,7 @@ end
 
 function _OnHeartbeat(deltaTime)
 	if waitingForTP == true then
+		print(#AreaDetectorStartRaceComponenteInstance.playersInArea)
 		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= MinimunPlayersToStart then
 			IncreaseTime(deltaTime)
 		else
@@ -91,6 +110,8 @@ function _OnHeartbeat(deltaTime)
 		StartRaceRoutine(deltaTime)
 	elseif waitingForRaceFinish then
 		WaitFinishRace()
+	elseif waitingForPodium then
+		MatchManagerModule:PodiumView(deltaTime)
 	end
 end
 
