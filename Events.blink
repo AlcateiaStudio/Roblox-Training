@@ -9,9 +9,9 @@ event RaceStarted {
     data: string
 }
 
-event PlayerCollidedWithSpike {
+event PlayerTakeDamage {
     from: Server,
     type: Reliable,
     call: SingleSync,
-    data: u8
+    data: vector<f64>
 }

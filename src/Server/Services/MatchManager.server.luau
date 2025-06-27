@@ -5,29 +5,37 @@ local Net = require(ServerScriptService.Server.Net)
 local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
-local Players_Quantities_To_Start = 1
+local MinimunPlayersToStart = 2
 local Time_Max_To_Await_To_TP = 3
 local Time_Max_To_Await_To_Star_Race = 3
+
 local CurrentTimeToTP = 0
 local CurrentTimeToStarRace = 0
 
 local TransformsToStarRace = {}
 
-local AreaDetectorStartRaceGameObject: Model
 local AreaDetectorStartRaceComponenteInstance
+local AreaDetectorFinishRaceComponenteInstance
 
 local waitingForTP = true
 local waitingToStarRace = false
-local waitinfForRaceFinish = false
+local waitingForRaceFinish = false
 local listaDePlayers = {}
 
 function OnStart()
-	AreaDetectorStartRaceGameObject = workspace:WaitForChild("AreaDetectorTest", 10) :: Model
+	local AreaDetectorStartRaceGameObject: Model = workspace:WaitForChild("AreaDetectorRunStart", 10) :: Model
 	assert(AreaDetectorStartRaceGameObject, "AreaDetector not found in workspace")
 	AreaDetectorComponentClass:WaitForInstance(AreaDetectorStartRaceGameObject):andThen(function(component)
 		AreaDetectorStartRaceComponenteInstance = component
 		RunService.Heartbeat:Connect(_OnHeartbeat)
 	end)
+
+	local AreaDetectorFinishRaceGameObject: Model = workspace:WaitForChild("AreaDetectorRunFinish", 10) :: Model
+	assert(AreaDetectorFinishRaceGameObject, "AreaDetector not found in workspace")
+	AreaDetectorComponentClass:WaitForInstance(AreaDetectorFinishRaceGameObject):andThen(function(component)
+		AreaDetectorFinishRaceComponenteInstance = component
+	end)
+
 	MatchManagerModule:GetPadsStartRace(TransformsToStarRace)
 end
 
@@ -53,22 +61,36 @@ function StartRaceRoutine(deltaTime)
 	end
 	--TODO Destravar o player
 	waitingToStarRace = false
-	waitinfForRaceFinish = true
+	waitingForRaceFinish = true
 	for _, player in ipairs(listaDePlayers) do
 		print(`Player {player.Name} is ready to race`)
 	end
 	Net.RaceStarted.FireList(listaDePlayers, "Hello World!")
 end
 
+function FinishRace()
+	waitingForRaceFinish = false
+	waitingForTP = true
+	print(`{AreaDetectorFinishRaceComponenteInstance.playersInArea[1]} Won The Race`)
+end
+
+function WaitFinishRace()
+	if #AreaDetectorFinishRaceComponenteInstance.playersInArea >= 1 then
+		FinishRace()
+	end
+end
+
 function _OnHeartbeat(deltaTime)
 	if waitingForTP == true then
-		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= Players_Quantities_To_Start then
+		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= MinimunPlayersToStart then
 			IncreaseTime(deltaTime)
 		else
 			CurrentTimeToTP = 0
 		end
 	elseif waitingToStarRace then
 		StartRaceRoutine(deltaTime)
+	elseif waitingForRaceFinish then
+		WaitFinishRace()
 	end
 end
 
