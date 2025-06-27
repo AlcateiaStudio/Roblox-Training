@@ -42,7 +42,7 @@ function AreaDetector:Start()
 	self.Signals = {
 		Entered = Signal.new(),
 		Left = Signal.new(),
-		OnCharacterAdded = Instance.new("BindableFunction")
+		OnCharacterAdded = Signal.new(),
 	}
 
 	-- Check for existing players
@@ -91,11 +91,10 @@ function AreaDetector:Stop()
 
 	self.Signals.Entered:Destroy()
 	self.Signals.Left:Destroy()
-	self.Signals.OnCharacterAdded:Destroy()
 end
 
 function AreaDetector:_OnCharacterAdded(player: Player, character: Model)
-	local parts = self.Signals.OnCharacterAdded:Invoke(player, character)
+	local parts = self.Signals.OnCharacterAdded:Fire(player, character)
 	if not parts or #parts == 0 then
 		self.charactersToDetect[player] = { character.PrimaryPart }
 	else
@@ -107,7 +106,9 @@ end
 function AreaDetector:_UpdateOverlapParams()
 	local filterList = {}
 	for _, parts in pairs(self.charactersToDetect) do
-		table.insert(filterList, parts)
+		for _, part in ipairs(parts) do
+			table.insert(filterList, part)
+		end
 	end
 	areaDetectorOverlapParams.FilterDescendantsInstances = filterList
 end
