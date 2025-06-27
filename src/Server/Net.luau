@@ -161,11 +161,14 @@ local function WriteEVENT_RaceStarted(Value: string): ()
 	buffer.writestring(SendBuffer, SendOffset, Value, Length)
 end
 
-local function WriteEVENT_PlayerCollidedWithSpike(Value: number): ()
-	-- Allocate BLOCK: 2 bytes
-	local BLOCK_START = Allocate(2)
+local function WriteEVENT_PlayerTakeDamage(Value: Vector3): ()
+	-- Allocate BLOCK: 25 bytes
+	local BLOCK_START = Allocate(25)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
-	buffer.writeu8(SendBuffer, BLOCK_START + 1, Value)
+	local Vector = Value
+	buffer.writef64(SendBuffer, BLOCK_START + 1, Vector.X)
+	buffer.writef64(SendBuffer, BLOCK_START + 9, Vector.Y)
+	buffer.writef64(SendBuffer, BLOCK_START + 17, Vector.Z)
 end
 
 if not RunService:IsRunning() then
@@ -177,7 +180,7 @@ if not RunService:IsRunning() then
 		FireList = NOOP,
 		FireExcept = NOOP
 	},
-	PlayerCollidedWithSpike = {
+	PlayerTakeDamage = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -305,15 +308,15 @@ local Returns = table.freeze({
 			end
 		end,
 	},
-	PlayerCollidedWithSpike = {
-		Fire = function(Player: Player, Value: number): ()
+	PlayerTakeDamage = {
+		Fire = function(Player: Player, Value: Vector3): ()
 			Load(PlayersMap[Player])
-			WriteEVENT_PlayerCollidedWithSpike(Value)
+			WriteEVENT_PlayerTakeDamage(Value)
 			PlayersMap[Player] = Save()
 		end,
-		FireAll = function(Value: number): ()
+		FireAll = function(Value: Vector3): ()
 			Load()
-			WriteEVENT_PlayerCollidedWithSpike(Value)
+			WriteEVENT_PlayerTakeDamage(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				Load(PlayersMap[Player])
@@ -323,9 +326,9 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireList = function(List: {Player}, Value: number): ()
+		FireList = function(List: {Player}, Value: Vector3): ()
 			Load()
-			WriteEVENT_PlayerCollidedWithSpike(Value)
+			WriteEVENT_PlayerTakeDamage(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in List do
 				Load(PlayersMap[Player])
@@ -335,9 +338,9 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireExcept = function(Except: Player, Value: number): ()
+		FireExcept = function(Except: Player, Value: Vector3): ()
 			Load()
-			WriteEVENT_PlayerCollidedWithSpike(Value)
+			WriteEVENT_PlayerTakeDamage(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then
