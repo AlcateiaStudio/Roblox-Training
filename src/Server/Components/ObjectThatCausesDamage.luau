@@ -8,7 +8,7 @@ local AreaDetectorComponent = require(ServerScriptService.Server.Components.Area
 local ObjectThatCausesDamageComponent = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
 
 local timeOut = 2
-local collisionBodyPartsNames = { "LeftFoot", "RightFoot" }
+local collisionBodyPartsNames = { "UpperTorso", "LeftFoot", "RightFoot" }
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
@@ -30,7 +30,7 @@ function ObjectThatCausesDamageComponent:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component)
 			self.areaDetector = component
-			self.areaDetector.Signals.OnCharacterAdded:Connect(OnCharacterAdded_GetNecessaryPartsToTrack)
+			self.areaDetector.Signals.OnCharacterAdded.OnInvoke = OnCharacterAdded_GetNecessaryPartsToTrack
 
 			self:SetUpAreaDetectorEvents()
 		end)
@@ -58,10 +58,16 @@ function ObjectThatCausesDamageComponent:CauseDamage(player: Player)
 		return
 	end
 
-	print(`ObjectThatCausesDamage: causing damage to player {player.Name}`)
+	if character.PrimaryPart == nil then
+		warn("Primary part not found for character:", character.Name)
 
-	--TODO: calcular direcao do knockback
-	Net.PlayerTakeDamage.Fire(player, Vector3.zero)
+		return
+	end
+
+	local collider: BasePart = self.areaDetector.collider
+	local knockBackDirection: Vector3 = character.PrimaryPart.CFrame.Position - collider.CFrame.Position
+
+	Net.PlayerTakeDamage.Fire(player, knockBackDirection)
 end
 
 return ObjectThatCausesDamageComponent

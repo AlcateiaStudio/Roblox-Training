@@ -42,7 +42,7 @@ function AreaDetector:Start()
 	self.Signals = {
 		Entered = Signal.new(),
 		Left = Signal.new(),
-		OnCharacterAdded = Signal.new(),
+		OnCharacterAdded = Instance.new("BindableFunction"),
 	}
 
 	-- Check for existing players
