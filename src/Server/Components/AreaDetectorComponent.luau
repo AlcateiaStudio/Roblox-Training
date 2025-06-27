@@ -91,10 +91,11 @@ function AreaDetector:Stop()
 
 	self.Signals.Entered:Destroy()
 	self.Signals.Left:Destroy()
+	self.Signals.OnCharacterAdded:Destroy()
 end
 
 function AreaDetector:_OnCharacterAdded(player: Player, character: Model)
-	local parts = self.Signals.OnCharacterAdded:Fire(player, character)
+	local parts = self.Signals.OnCharacterAdded:Invoke(player, character)
 	if not parts or #parts == 0 then
 		self.charactersToDetect[player] = { character.PrimaryPart }
 	else
