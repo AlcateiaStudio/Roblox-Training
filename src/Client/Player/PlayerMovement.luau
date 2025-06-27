@@ -42,9 +42,13 @@ end
 
 function PlayerMovement:SubscribeToBodyPartsEvents()
 	for i, v in pairs(collisionBodyPartsNames) do
-		local collisionBodyPart: BasePart = character:FindFirstChild(v)
+		local collisionBodyPart = character:FindFirstChild(v)
 
-		collisionBodyPart.Touched:Connect(OnCharacterCollided)
+		if collisionBodyPart:IsA("BasePart") then
+			collisionBodyPart.Touched:Connect(OnCharacterCollided)
+		else
+			warn(`O objeto com nome \"{v}\" nao e uma BasePart!`)
+		end
 	end
 end
 

@@ -11,12 +11,16 @@ local timeOut = 2
 local collisionBodyPartsNames = { "LeftFoot", "RightFoot" }
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
-	local partsToTrack = {}
+	local partsToTrack: { BasePart } = {}
 
 	for i, v in pairs(collisionBodyPartsNames) do
-		local collisionBodyPart: BasePart = character:FindFirstChild(v)
+		local collisionBodyPart = character:FindFirstChild(v)
 
-		table.insert(partsToTrack, collisionBodyPart)
+		if collisionBodyPart:IsA("BasePart") then
+			table.insert(partsToTrack, collisionBodyPart)
+		else
+			warn(`O objeto com nome \"{v}\" nao e uma BasePart!`)
+		end
 	end
 
 	return partsToTrack
