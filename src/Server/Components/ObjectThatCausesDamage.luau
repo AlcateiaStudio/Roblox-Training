@@ -58,10 +58,18 @@ function ObjectThatCausesDamageComponent:CauseDamage(player: Player)
 		return
 	end
 
+	if character.PrimaryPart == nil then
+		warn("Primary part not found for character:", character.Name)
+
+		return
+	end
+
 	print(`ObjectThatCausesDamage: causing damage to player {player.Name}`)
 
-	--TODO: calcular direcao do knockback
-	Net.PlayerTakeDamage.Fire(player, Vector3.zero)
+	local collider: BasePart = self.areaDetector.collider
+	local knockBackDirection: Vector3 = character.PrimaryPart.CFrame.Position - collider.CFrame.Position
+
+	Net.PlayerTakeDamage.Fire(player, knockBackDirection)
 end
 
 return ObjectThatCausesDamageComponent
