@@ -68,7 +68,7 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace)
 		CurrentTimeToTP = 0
 
-		self.OnPlayersTeleportedToStartRace:Fire()
+		self.OnPlayersTeleportedToStartRace:Fire(listaDeCharacters)
 	end
 end
 
