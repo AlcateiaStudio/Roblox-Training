@@ -6,7 +6,6 @@ event RaceStarted {
     from: Server,
     type: Reliable,
     call: SingleSync,
-    data: string
 }
 
 event PlayerTakeDamage {

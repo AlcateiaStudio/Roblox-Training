@@ -82,7 +82,7 @@ function StartRaceRoutine(deltaTime)
 	for _, player in ipairs(listaDePlayers) do
 		print(`Player {player.Name} is ready to race`)
 	end
-	Net.RaceStarted.FireList(listaDePlayers, "Hello World!")
+	Net.RaceStarted.FireList(listaDePlayers)
 end
 
 function FinishRace()

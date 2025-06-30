@@ -11,8 +11,7 @@ local TrackHUDTimeUIController = {}
 function TrackHUDTimeUIController:OnStart()
 	print("ONSTART CHAMADO")
 
-	Net.RaceStarted.On(function(value)
-		print(value)
+	Net.RaceStarted.On(function()
 		TrackHUDTimeUIController:OnRaceStarted()
 	end)
 end

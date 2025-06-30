@@ -152,12 +152,8 @@ local Queue: any = {
 
 Queue.Reliable[0] = table.create(256)
 Queue.Reliable[1] = table.create(256)
-local function ReadEVENT_RaceStarted(): (string)
-	-- Read BLOCK: 2 bytes
-	local BLOCK_START = Read(2)
-	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
-	local Value = buffer.readstring(RecieveBuffer, Read(Length), Length)
-	return Value
+local function ReadEVENT_RaceStarted(): (nil)
+	return nil
 end
 
 local function ReadEVENT_PlayerTakeDamage(): (number, Vector3)
@@ -242,7 +238,7 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
-			local Value: string = ReadEVENT_RaceStarted()
+			local Value: nil = ReadEVENT_RaceStarted()
 			if Events.Reliable[0] ~= nil then
 				Events.Reliable[0](Value)
 			else
@@ -282,7 +278,7 @@ local Returns = table.freeze({
 	StepReplication = StepReplication,
 
 	RaceStarted = {
-		On = function(Listener: (Value: string) -> ()): () -> ()
+		On = function(Listener: (Value: nil) -> ()): () -> ()
 			Events.Reliable[0] = Listener
 			for Index, Arguments in Queue.Reliable[0] do
 				Listener(table.unpack(Arguments))

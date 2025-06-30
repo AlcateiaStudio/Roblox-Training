@@ -77,18 +77,22 @@ local function serveRojo()
 		checkInterval = 1,
 	})
 
-	print("Serving Rojo and watching files...")
+	print("Serving Rojo, watching files, and monitoring Blink events...")
 	local rojoServe = task.spawn(executeString, "rojo serve " .. rojoProjectFile)
+	local blinkWatch = task.spawn(executeString, "blink Events.blink --watch")
 	local watcherRoutine = task.spawn(startWatchers)
+
 	task.defer(function()
 		task.wait()
 		printChanges("")
-		printChanges("| File-Watcher |")
+		printChanges("| File-Watcher & Blink Monitor |")
 	end)
+
 	stdio.prompt("text", "Press 'ctrl+c' to exit:")
 	task.cancel(watcherRoutine)
 	task.cancel(rojoServe)
-	print("Stopping File-Watcher and Rojo Serve...")
+	task.cancel(blinkWatch)
+	print("Stopping File-Watcher, Rojo Serve, and Blink Watch...")
 	process.exit()
 end
 
@@ -98,7 +102,7 @@ local Options
 Options = {
 	[1] = {
 		Name = "Serve Rojo",
-		Description = "Watches for changes, and serves the Rojo project.",
+		Description = "Watches for changes, updates Blink script, and serves the Rojo project.",
 		Execute = serveRojo,
 	},
 
