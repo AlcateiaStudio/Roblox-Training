@@ -8,6 +8,12 @@ event RaceStarted {
     call: SingleSync,
 }
 
+event RaceFinished {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+}
+
 event PlayerTakeDamage {
     from: Server,
     type: Reliable,

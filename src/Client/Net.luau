@@ -152,7 +152,12 @@ local Queue: any = {
 
 Queue.Reliable[0] = table.create(256)
 Queue.Reliable[1] = table.create(256)
+Queue.Reliable[2] = table.create(256)
 local function ReadEVENT_RaceStarted(): (nil)
+	return nil
+end
+
+local function ReadEVENT_RaceFinished(): (nil)
 	return nil
 end
 
@@ -195,6 +200,9 @@ if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
 	RaceStarted = {
+		On = NOOP
+	},
+	RaceFinished = {
 		On = NOOP
 	},
 	PlayerTakeDamage = {
@@ -248,14 +256,24 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				table.insert(Queue.Reliable[0], {Value} :: {any})
 			end
 		elseif Index == 1 then
-			local Value1: number, Value2: Vector3 = ReadEVENT_PlayerTakeDamage()
+			local Value: nil = ReadEVENT_RaceFinished()
 			if Events.Reliable[1] ~= nil then
-				Events.Reliable[1](Value1, Value2)
+				Events.Reliable[1](Value)
 			else
 				if #Queue.Reliable[1] > 256 then
+					warn("[Blink]: Event queue of \"RaceFinished\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[1], {Value} :: {any})
+			end
+		elseif Index == 2 then
+			local Value1: number, Value2: Vector3 = ReadEVENT_PlayerTakeDamage()
+			if Events.Reliable[2] ~= nil then
+				Events.Reliable[2](Value1, Value2)
+			else
+				if #Queue.Reliable[2] > 256 then
 					warn("[Blink]: Event queue of \"PlayerTakeDamage\" exceeded 256, did you forget to implement a listener?")
 				end
-				table.insert(Queue.Reliable[1], {Value1, Value2} :: {any})
+				table.insert(Queue.Reliable[2], {Value1, Value2} :: {any})
 			end
 		end
 	end
@@ -291,8 +309,8 @@ local Returns = table.freeze({
 			end
 		end
 	},
-	PlayerTakeDamage = {
-		On = function(Listener: (Value1: number, Value2: Vector3) -> ()): () -> ()
+	RaceFinished = {
+		On = function(Listener: (Value: nil) -> ()): () -> ()
 			Events.Reliable[1] = Listener
 			for Index, Arguments in Queue.Reliable[1] do
 				Listener(table.unpack(Arguments))
@@ -301,6 +319,20 @@ local Returns = table.freeze({
 			return function (): ()
 				if Events.Reliable[1] == Listener then
 					Events.Reliable[1] = nil
+				end
+			end
+		end
+	},
+	PlayerTakeDamage = {
+		On = function(Listener: (Value1: number, Value2: Vector3) -> ()): () -> ()
+			Events.Reliable[2] = Listener
+			for Index, Arguments in Queue.Reliable[2] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[2] = {}
+			return function (): ()
+				if Events.Reliable[2] == Listener then
+					Events.Reliable[2] = nil
 				end
 			end
 		end

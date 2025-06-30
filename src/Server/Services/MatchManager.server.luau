@@ -45,8 +45,9 @@ function OnLastPlayerCrossedFinishLinde(player)
 	print(`Player {player} Crossed On Last`)
 end
 
-function OnFinishPodium()
+function OnFinishPodium(listaDePlayers)
 	print("Finished Podium view")
+	Net.RaceFinished.FireList(listaDePlayers)
 end
 
 function _OnHeartbeat(deltaTime)

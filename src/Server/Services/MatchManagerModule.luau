@@ -109,7 +109,7 @@ function MatchManagerModule:PodiumView(deltaTime)
 	if currentTimeOnPodium >= Time_To_Stay_On_Podium then
 		currentTimeOnPodium = 0
 		self.CurrentManagerStatus = self.ManagerStatus.WaitingForTp
-		self.OnFinishPodiumViewCallback:Fire()
+		self.OnFinishPodiumViewCallback:Fire(listaDePlayers)
 	end
 end
 

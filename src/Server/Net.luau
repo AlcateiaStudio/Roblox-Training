@@ -157,10 +157,16 @@ local function WriteEVENT_RaceStarted(Value: nil): ()
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
 end
 
+local function WriteEVENT_RaceFinished(Value: nil): ()
+	-- Allocate BLOCK: 1 bytes
+	local BLOCK_START = Allocate(1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+end
+
 local function WriteEVENT_PlayerTakeDamage(Value1: number, Value2: Vector3): ()
 	-- Allocate BLOCK: 27 bytes
 	local BLOCK_START = Allocate(27)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
 	if Value1 > 65504 then
 		buffer.writeu16(SendBuffer, BLOCK_START + 1, 0b0_11111_0000000000)
 	elseif Value1 < -65504 then
@@ -194,6 +200,12 @@ if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
 	RaceStarted = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	RaceFinished = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -314,6 +326,52 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value: nil): ()
 			Load()
 			WriteEVENT_RaceStarted(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	RaceFinished = {
+		Fire = function(Player: Player, Value: nil): ()
+			Load(PlayersMap[Player])
+			WriteEVENT_RaceFinished(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: nil): ()
+			Load()
+			WriteEVENT_RaceFinished(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: nil): ()
+			Load()
+			WriteEVENT_RaceFinished(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: nil): ()
+			Load()
+			WriteEVENT_RaceFinished(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then
