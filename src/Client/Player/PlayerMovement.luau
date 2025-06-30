@@ -19,8 +19,10 @@ local PlayerState = { Normal = 0, TakingDamage = 1, Static = 3 }
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand" }
 
 local speedBase = 10
-local speedMax = 100
-local acceleration = 12
+local speedMaxNormal = 60
+local speedMaxDashing = 140
+local accelerationNormal = 12
+local accelerationDashing = 100
 local jumpAccelerationPercentage = 0.3
 
 local knockBackDirection: Vector3 = Vector3.zero
@@ -30,6 +32,7 @@ local knockBackTimeMax = 0.4
 local playerState = PlayerState.Normal
 local collidedInThisFrame = false
 local canPlayerMove = true
+local isPlayerDashing = false
 
 local function OnCharacterCollided(part: BasePart)
 	if collidedInThisFrame == true then
@@ -50,7 +53,7 @@ local function OnPlayerTakeDamage(_knockBackSpeed: number, _knockBackDirection: 
 end
 
 local function OnPlayerDashStateChanged(_isDashEnabled: boolean)
-	print(`Dash state changed {_isDashEnabled}`)
+	isPlayerDashing = _isDashEnabled
 end
 
 function PlayerMovement:SubscribeToBodyPartsEvents()
@@ -91,9 +94,20 @@ function PlayerMovement:UpdateVelocity(deltaTime)
 	local isMoving = humanoid.MoveDirection.Magnitude > 0
 	local isJumping = humanoid:GetState() == Enum.HumanoidStateType.Freefall
 	local _acceleration
+	local _speedMax
+
+	if isPlayerDashing == true then
+		_speedMax = speedMaxDashing
+	else
+		_speedMax = speedMaxNormal
+	end
 
 	if isMoving == true then
-		_acceleration = acceleration
+		if isPlayerDashing == true then
+			_acceleration = accelerationDashing
+		else
+			_acceleration = accelerationNormal
+		end
 	else
 		_acceleration = 0
 	end
@@ -108,7 +122,7 @@ function PlayerMovement:UpdateVelocity(deltaTime)
 
 	humanoid.WalkSpeed += _acceleration * deltaTime
 
-	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, speedMax)
+	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, _speedMax)
 end
 
 function PlayerMovement:DoKnockBack(deltaTime)

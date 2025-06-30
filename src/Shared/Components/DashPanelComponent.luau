@@ -92,11 +92,13 @@ function DashPanel:OnPlayerEnter(player: Player)
 	end
 
 	if playersInArea[player] == nil then
-		playersInArea[player] = player
+		playersInArea[player] = 1
 
 		if dashStateChangedCallback ~= nil then
 			dashStateChangedCallback(true)
 		end
+	else
+		playersInArea[player] += 1
 	end
 end
 
@@ -106,10 +108,14 @@ function DashPanel:OnPlayerExit(player: Player)
 	end
 
 	if playersInArea[player] ~= nil then
-		playersInArea[player] = nil
+		playersInArea[player] -= 1
 
-		if dashStateChangedCallback ~= nil then
-			dashStateChangedCallback(false)
+		if playersInArea[player] <= 0 then
+			playersInArea[player] = nil
+
+			if dashStateChangedCallback ~= nil then
+				dashStateChangedCallback(false)
+			end
 		end
 	end
 end
