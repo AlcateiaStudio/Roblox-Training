@@ -5,7 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AreaDetectorComponentClass = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
-local MinimunPlayersToStart = 1
+local Net = require(ServerScriptService.Server.Net)
 
 local AreaDetectorStartRaceComponenteInstance
 local AreaDetectorFinishRaceComponenteInstance
@@ -25,37 +25,36 @@ function OnStart()
 	end)
 
 	MatchManagerModule:Start()
-	MatchManagerModule.FinishPodium:Connect(FinishPodium)
+
+	MatchManagerModule.OnPlayersTeleportedToStartRace:Connect(OnFinishPodium)
+	MatchManagerModule.OnStartedRace:Connect(OnStartRace)
+	MatchManagerModule.OnPlayerCrossedFinishLine:Connect(OnPlayerCrossedFinishLinde)
+	MatchManagerModule.OnLastPlayerCrossedFinishLine:Connect(OnLastPlayerCrossedFinishLinde)
+	MatchManagerModule.OnFinishPodiumViewCallback:Connect(OnFinishPodium)
 end
 
-function FinishPodium() end
+function OnStartRace(listaDePlayers)
+	print("Race Will Start")
+	Net.RaceStarted.FireList(listaDePlayers)
+end
 
-function WaitFinishRace()
-	print("Waiting to finish")
-	if #AreaDetectorFinishRaceComponenteInstance.playersInArea >= 1 then
-		print(`{AreaDetectorFinishRaceComponenteInstance.playersInArea[1]} Won The Race`)
-		MatchManagerModule:FinishRace()
-	end
+function OnPlayerCrossedFinishLinde(player)
+	print(`Player {player} Crossed`)
+end
+function OnLastPlayerCrossedFinishLinde(player)
+	print(`Player {player} Crossed On Last`)
+end
+
+function OnFinishPodium()
+	print("Finished Podium view")
 end
 
 function _OnHeartbeat(deltaTime)
-	if MatchManagerModule.CurrentManagerStatus == MatchManagerModule.ManagerStatus.WaitingForTp then
-		if #AreaDetectorStartRaceComponenteInstance.playersInArea >= MinimunPlayersToStart then
-			MatchManagerModule:WaitingOnPadToStartRace(
-				deltaTime,
-				AreaDetectorStartRaceComponenteInstance.playersInArea,
-				AreaDetectorStartRaceComponenteInstance.charactersInArea
-			)
-		else
-			CurrentTimeToTP = 0
-		end
-	elseif MatchManagerModule.CurrentManagerStatus == MatchManagerModule.ManagerStatus.WaitingToStarRace then
-		MatchManagerModule:StartRaceRoutine(deltaTime)
-	elseif MatchManagerModule.CurrentManagerStatus == MatchManagerModule.ManagerStatus.WaitingForRaceFinish then
-		WaitFinishRace()
-	elseif MatchManagerModule.CurrentManagerStatus == MatchManagerModule.ManagerStatus.WaitingForPodium then
-		MatchManagerModule:PodiumView(deltaTime)
-	end
+	MatchManagerModule:Update(
+		deltaTime,
+		AreaDetectorStartRaceComponenteInstance,
+		AreaDetectorFinishRaceComponenteInstance
+	)
 end
 
 OnStart()

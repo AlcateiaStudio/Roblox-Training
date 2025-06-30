@@ -6,16 +6,15 @@ MatchManagerModule.ManagerStatus = {
 	WaitingForPodium = 3,
 }
 
-local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Signal = require(ReplicatedStorage.Packages.Signal)
-local Net = require(ServerScriptService.Server.Net)
 
 local Max_Player_To_Run = 4
 local Time_Max_To_Await_To_Star_Race = 3
 local Time_To_Stay_On_Podium = 5
 local Time_Max_To_Await_To_TP = 3
+local MinimunPlayersToStart = 1
 
 local listaDePlayers = {}
 local listaDeCharacters = {}
@@ -25,8 +24,14 @@ local TransformsToPodium = {}
 local CurrentTimeToTP = 0
 local CurrentTimeToStarRace = 0
 local currentTimeOnPodium = 0
+local QuantityPlayersCrossedFinishLine = 0
 
-MatchManagerModule.FinishPodium = Signal.new()
+MatchManagerModule.OnPlayersTeleportedToStartRace = Signal.new()
+MatchManagerModule.OnStartedRace = Signal.new()
+MatchManagerModule.OnPlayerCrossedFinishLine = Signal.new()
+MatchManagerModule.OnLastPlayerCrossedFinishLine = Signal.new()
+MatchManagerModule.OnFinishPodiumViewCallback = Signal.new()
+
 MatchManagerModule.CurrentManagerStatus = MatchManagerModule.ManagerStatus.WaitingForTp
 
 function MatchManagerModule:Start()
@@ -53,16 +58,6 @@ function MatchManagerModule:AdjustPostionFromObjectsToList(charactersInArea, Tra
 	end
 end
 
-function MatchManagerModule:PodiumView(deltaTime)
-	currentTimeOnPodium += deltaTime
-
-	if currentTimeOnPodium >= Time_To_Stay_On_Podium then
-		currentTimeOnPodium = 0
-		self.CurrentManagerStatus = self.ManagerStatus.WaitingForTp
-		self.FinishPodium:Fire()
-	end
-end
-
 function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, charactersInArea)
 	CurrentTimeToTP += deltaTime
 	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
@@ -73,13 +68,8 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace)
 		CurrentTimeToTP = 0
 
-		print("Reached max time to start race")
+		self.OnPlayersTeleportedToStartRace:Fire()
 	end
-end
-
-function MatchManagerModule:FinishRace()
-	self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
-	self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium)
 end
 
 function MatchManagerModule:StartRaceRoutine(deltaTime)
@@ -96,7 +86,51 @@ function MatchManagerModule:StartRaceRoutine(deltaTime)
 		print(`Player {player.Name} is ready to race`)
 	end
 
-	Net.RaceStarted.FireList(listaDePlayers)
+	self.OnStartedRace:Fire(listaDePlayers)
+end
+
+function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRaceComponenteInstance)
+	if #AreaDetectorFinishRaceComponenteInstance.playersInArea >= 1 then
+		QuantityPlayersCrossedFinishLine += 1
+
+		if #listaDePlayers == QuantityPlayersCrossedFinishLine then
+			self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRaceComponenteInstance.playersInArea[1])
+			self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
+			self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium)
+		else
+			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRaceComponenteInstance.playersInArea[1])
+		end
+	end
+end
+
+function MatchManagerModule:PodiumView(deltaTime)
+	currentTimeOnPodium += deltaTime
+
+	if currentTimeOnPodium >= Time_To_Stay_On_Podium then
+		currentTimeOnPodium = 0
+		self.CurrentManagerStatus = self.ManagerStatus.WaitingForTp
+		self.OnFinishPodiumViewCallback:Fire()
+	end
+end
+
+function MatchManagerModule:Update(deltaTime, AreaDetectorStartRace, AreaDetectorFinishRace)
+	if self.CurrentManagerStatus == self.ManagerStatus.WaitingForTp then
+		if #AreaDetectorStartRace.playersInArea >= MinimunPlayersToStart then
+			self:WaitingOnPadToStartRace(
+				deltaTime,
+				AreaDetectorStartRace.playersInArea,
+				AreaDetectorStartRace.charactersInArea
+			)
+		else
+			CurrentTimeToTP = 0
+		end
+	elseif self.CurrentManagerStatus == self.ManagerStatus.WaitingToStarRace then
+		self:StartRaceRoutine(deltaTime)
+	elseif self.CurrentManagerStatus == self.ManagerStatus.WaitingForRaceFinish then
+		self:WaitFinishRace(AreaDetectorFinishRace)
+	elseif self.CurrentManagerStatus == self.ManagerStatus.WaitingForPodium then
+		self:PodiumView(deltaTime)
+	end
 end
 
 return MatchManagerModule
