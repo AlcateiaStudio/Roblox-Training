@@ -8,6 +8,9 @@ local Packages = ReplicatedStorage.Packages
 local Component = require(Packages.Component)
 local Signal = require(Packages.Signal)
 
+--// Types //--
+type Callback = () -> ()
+
 --// Constants //--
 local UPDATE_RATE = 6
 
@@ -42,8 +45,9 @@ function AreaDetector:Start()
 	self.Signals = {
 		Entered = Signal.new(),
 		Left = Signal.new(),
-		OnCharacterAdded = Instance.new("BindableFunction"),
 	}
+
+	self.Callbacks = {}
 
 	-- Check for existing players
 	for _, player in ipairs(Players:GetPlayers()) do
@@ -83,6 +87,12 @@ function AreaDetector:Start()
 	)
 end
 
+function AreaDetector:RegisterOnCharacterAdded(callback: (Player, Model) -> { BasePart })
+	if not self.Signals.OnCharacterAdded then
+		self.Callbacks.OnCharacterAdded = callback
+	end
+end
+
 function AreaDetector:Stop()
 	for _, connection in ipairs(self.connections) do
 		print(`Disconnecting {connection}`)
@@ -95,7 +105,10 @@ function AreaDetector:Stop()
 end
 
 function AreaDetector:_OnCharacterAdded(player: Player, character: Model)
-	local parts = self.Signals.OnCharacterAdded:Invoke(player, character)
+	local parts
+	if self.Callbacks.OnCharacterAdded then
+		parts = self.Callbacks.OnCharacterAdded(player, character)
+	end
 	if not parts or #parts == 0 then
 		self.charactersToDetect[player] = { character.PrimaryPart }
 	else

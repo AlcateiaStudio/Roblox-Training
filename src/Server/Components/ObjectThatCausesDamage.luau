@@ -32,7 +32,7 @@ function ObjectThatCausesDamageComponent:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component)
 			self.areaDetector = component
-			self.areaDetector.Signals.OnCharacterAdded.OnInvoke = OnCharacterAdded_GetNecessaryPartsToTrack
+			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self:SetUpAreaDetectorEvents()
 		end)
