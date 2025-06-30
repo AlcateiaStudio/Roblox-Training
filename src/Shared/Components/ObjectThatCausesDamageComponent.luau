@@ -1,16 +1,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 
-local Net = require(ServerScriptService.Server.Net)
 local Component = require(ReplicatedStorage.Packages.Component)
 
 local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
-local ObjectThatCausesDamageComponent = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
+local ObjectThatCausesDamage = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
 
 local timeOut = 2
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
 local knockBackSpeed = 40
+
+type CauseDamageCallback = (_knockBackSpeed: number, _knockBackDirection: Vector3) -> ()
+
+local causeDamageCallback: CauseDamageCallback? = nil
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
@@ -28,7 +30,7 @@ local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, charact
 	return partsToTrack
 end
 
-function ObjectThatCausesDamageComponent:Start()
+function ObjectThatCausesDamage:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component)
 			self.areaDetector = component
@@ -37,21 +39,21 @@ function ObjectThatCausesDamageComponent:Start()
 			self:SetUpAreaDetectorEvents()
 		end)
 		:catch(function(err)
-			warn("ObjectThatCausesDamage failed to find AreaDetectorComponent in instance:", self.Instance, err)
+			warn("ObjectThatCausesDamage failed to find AreaDetector in instance:", self.Instance, err)
 
 			return nil
 		end)
 end
 
-function ObjectThatCausesDamageComponent:Stop() end
+function ObjectThatCausesDamage:Stop() end
 
-function ObjectThatCausesDamageComponent:SetUpAreaDetectorEvents()
+function ObjectThatCausesDamage:SetUpAreaDetectorEvents()
 	self.areaDetector.Signals.Entered:Connect(function(player: Player)
 		self:CauseDamage(player)
 	end)
 end
 
-function ObjectThatCausesDamageComponent:CauseDamage(player: Player)
+function ObjectThatCausesDamage:CauseDamage(player: Player)
 	local character: Model? = player.Character
 
 	if character == nil then
@@ -69,7 +71,13 @@ function ObjectThatCausesDamageComponent:CauseDamage(player: Player)
 	local collider: BasePart = self.areaDetector.collider
 	local knockBackDirection: Vector3 = character.PrimaryPart.CFrame.Position - collider.CFrame.Position
 
-	Net.PlayerTakeDamage.Fire(player, knockBackSpeed, knockBackDirection)
+	if causeDamageCallback ~= nil then
+		causeDamageCallback(knockBackSpeed, knockBackDirection)
+	end
 end
 
-return ObjectThatCausesDamageComponent
+function ObjectThatCausesDamage:RegisterOnDamageCallback(callback: CauseDamageCallback)
+	causeDamageCallback = callback
+end
+
+return ObjectThatCausesDamage

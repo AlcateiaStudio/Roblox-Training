@@ -50,10 +50,7 @@ function AreaDetector:Start()
 	self.Callbacks = {}
 
 	-- Check for existing players
-	for _, player in ipairs(Players:GetPlayers()) do
-		local character = player.Character or player.CharacterAdded:Wait()
-		self:_OnCharacterAdded(player, character)
-	end
+	self:UpdateExistingPlayers()
 
 	self.connections = {}
 
@@ -87,9 +84,18 @@ function AreaDetector:Start()
 	)
 end
 
+function AreaDetector:UpdateExistingPlayers()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character or player.CharacterAdded:Wait()
+		self:_OnCharacterAdded(player, character)
+	end
+end
+
 function AreaDetector:RegisterOnCharacterAdded(callback: (Player, Model) -> { BasePart })
 	if not self.Signals.OnCharacterAdded then
 		self.Callbacks.OnCharacterAdded = callback
+
+		self:UpdateExistingPlayers()
 	end
 end
 

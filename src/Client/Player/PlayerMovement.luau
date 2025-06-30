@@ -4,7 +4,7 @@ local PlayerMovement = {}
 
 local RunService = game:GetService("RunService")
 
-local Net = require(ReplicatedStorage.Client.Net)
+local ObjectThatCausesDamage = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -155,6 +155,6 @@ end
 
 RunService.Stepped:Connect(Update)
 
-Net.PlayerTakeDamage.On(OnPlayerTakeDamage)
+ObjectThatCausesDamage:RegisterOnDamageCallback(OnPlayerTakeDamage)
 
 return LifetimeObject.extend(PlayerMovement, "PlayerMovement")
