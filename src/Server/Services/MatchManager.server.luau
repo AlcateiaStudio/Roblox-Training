@@ -1,8 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Net = require(ServerScriptService.Server.Net)
-local AreaDetectorComponentClass = require(ServerScriptService.Server.Components.AreaDetectorComponent)
+local AreaDetectorComponentClass = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
 local MinimunPlayersToStart = 1

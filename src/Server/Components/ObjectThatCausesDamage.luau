@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Net = require(ServerScriptService.Server.Net)
 local Component = require(ReplicatedStorage.Packages.Component)
 
-local AreaDetectorComponent = require(ServerScriptService.Server.Components.AreaDetectorComponent)
+local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
 local ObjectThatCausesDamageComponent = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
 
 local timeOut = 2
