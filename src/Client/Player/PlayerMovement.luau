@@ -4,7 +4,8 @@ local PlayerMovement = {}
 
 local RunService = game:GetService("RunService")
 
-local ObjectThatCausesDamage = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
+local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
+local DashPanelComponent = require(ReplicatedStorage.Shared.Components.DashPanelComponent)
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -46,6 +47,10 @@ end
 
 local function OnPlayerTakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
 	PlayerMovement:TakeDamage(_knockBackSpeed, _knockBackDirection)
+end
+
+local function OnPlayerDashStateChanged(_isDashEnabled: boolean)
+	print(`Dash state changed {_isDashEnabled}`)
 end
 
 function PlayerMovement:SubscribeToBodyPartsEvents()
@@ -110,6 +115,7 @@ function PlayerMovement:DoKnockBack(deltaTime)
 	knockBackTime -= deltaTime
 
 	if knockBackTime <= 0 then
+		humanoid.WalkSpeed = 0
 		self:SetPlayerState(PlayerState.Normal)
 	end
 end
@@ -155,6 +161,7 @@ end
 
 RunService.Stepped:Connect(Update)
 
-ObjectThatCausesDamage:RegisterOnDamageCallback(OnPlayerTakeDamage)
+ObjectThatCausesDamageComponent:RegisterCauseDamageCallback(OnPlayerTakeDamage)
+DashPanelComponent:RegisterDashStateChangedCallback(OnPlayerDashStateChanged)
 
 return LifetimeObject.extend(PlayerMovement, "PlayerMovement")

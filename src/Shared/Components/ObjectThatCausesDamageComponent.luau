@@ -2,17 +2,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Component = require(ReplicatedStorage.Packages.Component)
 
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
 local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
 local ObjectThatCausesDamage = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
 
 local timeOut = 2
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
-local knockBackSpeed = 40
-
 type CauseDamageCallback = (_knockBackSpeed: number, _knockBackDirection: Vector3) -> ()
 
 local causeDamageCallback: CauseDamageCallback? = nil
+
+local knockBackSpeed = 40
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
@@ -53,7 +56,15 @@ function ObjectThatCausesDamage:SetUpAreaDetectorEvents()
 	end)
 end
 
+function ObjectThatCausesDamage:RegisterCauseDamageCallback(callback: CauseDamageCallback)
+	causeDamageCallback = callback
+end
+
 function ObjectThatCausesDamage:CauseDamage(player: Player)
+	if player ~= localPlayer then
+		return
+	end
+
 	local character: Model? = player.Character
 
 	if character == nil then
@@ -74,10 +85,6 @@ function ObjectThatCausesDamage:CauseDamage(player: Player)
 	if causeDamageCallback ~= nil then
 		causeDamageCallback(knockBackSpeed, knockBackDirection)
 	end
-end
-
-function ObjectThatCausesDamage:RegisterOnDamageCallback(callback: CauseDamageCallback)
-	causeDamageCallback = callback
 end
 
 return ObjectThatCausesDamage
