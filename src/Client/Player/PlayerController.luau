@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
-local PlayerMovement = {}
+local PlayerController = {}
 
 local RunService = game:GetService("RunService")
 
@@ -49,14 +49,14 @@ local function OnCharacterCollided(part: BasePart)
 end
 
 local function OnPlayerTakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
-	PlayerMovement:TakeDamage(_knockBackSpeed, _knockBackDirection)
+	PlayerController:TakeDamage(_knockBackSpeed, _knockBackDirection)
 end
 
 local function OnPlayerDashStateChanged(_isDashEnabled: boolean)
 	isPlayerDashing = _isDashEnabled
 end
 
-function PlayerMovement:SubscribeToBodyPartsEvents()
+function PlayerController:SubscribeToBodyPartsEvents()
 	for i, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart = character:FindFirstChild(v)
 
@@ -68,7 +68,7 @@ function PlayerMovement:SubscribeToBodyPartsEvents()
 	end
 end
 
-function PlayerMovement:SetCanPlayerMove(_canPlayerMove)
+function PlayerController:SetCanPlayerMove(_canPlayerMove)
 	canPlayerMove = _canPlayerMove
 
 	humanoid.AutoRotate = canPlayerMove
@@ -78,7 +78,7 @@ function PlayerMovement:SetCanPlayerMove(_canPlayerMove)
 	end
 end
 
-function PlayerMovement:SetPlayerState(_playerState: number)
+function PlayerController:SetPlayerState(_playerState: number)
 	playerState = _playerState
 
 	self:SetCanPlayerMove(playerState == PlayerState.Normal)
@@ -90,7 +90,7 @@ function PlayerMovement:SetPlayerState(_playerState: number)
 	end
 end
 
-function PlayerMovement:UpdateVelocity(deltaTime)
+function PlayerController:UpdateVelocity(deltaTime)
 	local isMoving = humanoid.MoveDirection.Magnitude > 0
 	local isJumping = humanoid:GetState() == Enum.HumanoidStateType.Freefall
 	local _acceleration
@@ -125,7 +125,7 @@ function PlayerMovement:UpdateVelocity(deltaTime)
 	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, _speedMax)
 end
 
-function PlayerMovement:DoKnockBack(deltaTime)
+function PlayerController:DoKnockBack(deltaTime)
 	knockBackTime -= deltaTime
 
 	if knockBackTime <= 0 then
@@ -134,7 +134,7 @@ function PlayerMovement:DoKnockBack(deltaTime)
 	end
 end
 
-function PlayerMovement:TakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
+function PlayerController:TakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
 	if playerState == PlayerState.Static then
 		return
 	end
@@ -155,21 +155,21 @@ function PlayerMovement:TakeDamage(_knockBackSpeed: number, _knockBackDirection:
 	)
 end
 
-function PlayerMovement:OnAwake()
+function PlayerController:OnAwake()
 	self:SubscribeToBodyPartsEvents()
 end
 
-function PlayerMovement:OnStart() end
+function PlayerController:OnStart() end
 
-function PlayerMovement:OnDestroy() end
+function PlayerController:OnDestroy() end
 
 local function Update(time, deltaTime)
 	collidedInThisFrame = false
 
 	if playerState == PlayerState.Normal then
-		PlayerMovement:UpdateVelocity(deltaTime)
+		PlayerController:UpdateVelocity(deltaTime)
 	elseif playerState == PlayerState.TakingDamage then
-		PlayerMovement:DoKnockBack(deltaTime)
+		PlayerController:DoKnockBack(deltaTime)
 	end
 end
 
@@ -178,4 +178,4 @@ RunService.Stepped:Connect(Update)
 ObjectThatCausesDamageComponent:RegisterCauseDamageCallback(OnPlayerTakeDamage)
 DashPanelComponent:RegisterDashStateChangedCallback(OnPlayerDashStateChanged)
 
-return LifetimeObject.extend(PlayerMovement, "PlayerMovement")
+return LifetimeObject.extend(PlayerController, "PlayerController")
