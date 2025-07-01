@@ -196,6 +196,17 @@ local function WriteEVENT_PlayerTakeDamage(Value1: number, Value2: Vector3): ()
 	buffer.writef64(SendBuffer, BLOCK_START + 19, Vector.Z)
 end
 
+local function WriteEVENT_CollidedWithPlayer(Value1: number, Value2: Vector3): ()
+	-- Allocate BLOCK: 29 bytes
+	local BLOCK_START = Allocate(29)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 3)
+	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value1)
+	local Vector = Value2
+	buffer.writef64(SendBuffer, BLOCK_START + 5, Vector.X)
+	buffer.writef64(SendBuffer, BLOCK_START + 13, Vector.Y)
+	buffer.writef64(SendBuffer, BLOCK_START + 21, Vector.Z)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -212,6 +223,12 @@ if not RunService:IsRunning() then
 		FireExcept = NOOP
 	},
 	PlayerTakeDamage = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	CollidedWithPlayer = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -418,6 +435,52 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value1: number, Value2: Vector3): ()
 			Load()
 			WriteEVENT_PlayerTakeDamage(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	CollidedWithPlayer = {
+		Fire = function(Player: Player, Value1: number, Value2: Vector3): ()
+			Load(PlayersMap[Player])
+			WriteEVENT_CollidedWithPlayer(Value1, Value2)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value1: number, Value2: Vector3): ()
+			Load()
+			WriteEVENT_CollidedWithPlayer(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value1: number, Value2: Vector3): ()
+			Load()
+			WriteEVENT_CollidedWithPlayer(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value1: number, Value2: Vector3): ()
+			Load()
+			WriteEVENT_CollidedWithPlayer(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then

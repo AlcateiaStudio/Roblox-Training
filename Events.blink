@@ -20,3 +20,10 @@ event PlayerTakeDamage {
     call: SingleSync,
     data: (f16, vector<f64>)
 }
+
+event CollidedWithPlayer {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: (u32, vector<f64>)
+}
