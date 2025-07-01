@@ -6,6 +6,9 @@ local Net = require(ServerScriptService.Server.Net)
 local Players = game:GetService("Players")
 
 local function SubscribePlayer(player: Player, character: Model)
+	--TODO: usar deteccao que so tem o OnEnter
+	return
+
 	local humanoidRootPart = character:WaitForChild("HumanoidRootPart") :: BasePart
 
 	humanoidRootPart.Touched:Connect(function(hit)
