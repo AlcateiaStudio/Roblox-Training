@@ -35,26 +35,37 @@ function OnStart()
 end
 
 function OnCharactersOnPositionToStartRace(listaDeCharacters)
-	for character, _ in pairs(listaDeCharacters) do
-		CharacterUtils:LockCharacter(character)
-	end
+	ToggleCharacterLock(listaDeCharacters, true)
 end
 
-function OnStartRace(listaDePlayers)
+function OnStartRace(listaDePlayers, listaDeCharacters)
 	print("Race Will Start")
 	Net.RaceStarted.FireList(listaDePlayers)
+	ToggleCharacterLock(listaDeCharacters, false)
 end
 
 function OnPlayerCrossedFinishLinde(player)
 	print(`Player {player} Crossed`)
 end
-function OnLastPlayerCrossedFinishLinde(player)
+function OnLastPlayerCrossedFinishLinde(player, listaDeCharacters)
 	print(`Player {player} Crossed On Last`)
+	ToggleCharacterLock(listaDeCharacters, true)
 end
 
-function OnFinishPodium(listaDePlayers)
+function OnFinishPodium(listaDePlayers, listaDeCharacters)
 	print("Finished Podium view")
 	Net.RaceFinished.FireList(listaDePlayers)
+	ToggleCharacterLock(listaDeCharacters, false)
+end
+
+function ToggleCharacterLock(listaDeCharacters, lock)
+	for character, _ in pairs(listaDeCharacters) do
+		if lock == true then
+			CharacterUtils:LockCharacter(character.character)
+		else
+			CharacterUtils:UnlockCharacter(character.character)
+		end
+	end
 end
 
 function _OnHeartbeat(deltaTime)
