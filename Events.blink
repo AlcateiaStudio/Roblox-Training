@@ -27,3 +27,10 @@ event CollidedWithPlayer {
     call: SingleSync,
     data: (u32, vector<f64>)
 }
+
+event PlayerUpdatedSpeed {
+    from: Client,
+    type: Reliable,
+    call: SingleSync,
+    data: u32
+}

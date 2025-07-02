@@ -6,15 +6,14 @@ local RunService = game:GetService("RunService")
 
 local Net = require(ReplicatedStorage.Client.Net)
 
-local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
 local DashPanelComponent = require(ReplicatedStorage.Shared.Components.DashPanelComponent)
+local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
 
 local Players = game:GetService("Players")
 
 local localPlayer = Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local humanoid = character:FindFirstChildOfClass("Humanoid")
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
 local playerModule = require(localPlayer.PlayerScripts.PlayerModule)
 local controls = playerModule:GetControls()
@@ -41,6 +40,9 @@ local collidedInThisFrame = false
 local canPlayerMove = true
 local isPlayerDashing = false
 
+local timeToUpdateSpeedOnServerMax = 0.5
+local timeToUpdateSpeedOnServer = 0
+
 local function OnCollidedWithPlayer(_otherPlayerSpeed: number, _knockBackDirection: Vector3)
 	if playerState == PlayerState.TakingKnockBack or playerState == PlayerState.Static then
 		return
@@ -48,6 +50,8 @@ local function OnCollidedWithPlayer(_otherPlayerSpeed: number, _knockBackDirecti
 
 	local currentSpeed = humanoid.WalkSpeed
 	local speedDifference = math.abs(currentSpeed - _otherPlayerSpeed)
+
+	print(`{localPlayer.Name} on collide with player, CS: {currentSpeed}, OPS {_otherPlayerSpeed}, SD {speedDifference}`)
 
 	if currentSpeed < minimunSpeedToKnockBack and _otherPlayerSpeed < minimunSpeedToKnockBack then
 		return
@@ -89,7 +93,7 @@ local function OnPlayerDashStateChanged(_isDashEnabled: boolean)
 end
 
 function PlayerController:SubscribeToBodyPartsEvents()
-	for i, v in pairs(collisionBodyPartsNames) do
+	for _, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart = character:FindFirstChild(v)
 
 		if collisionBodyPart:IsA("BasePart") then
@@ -149,12 +153,11 @@ function PlayerController:_UpdateVelocity(deltaTime)
 	end
 
 	if isMoving == false and isJumping == false then
-		humanoid.WalkSpeed = speedBase
+		humanoid.WalkSpeed = 0
+	else
+		humanoid.WalkSpeed += _acceleration * deltaTime
+		humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, _speedMax)
 	end
-
-	humanoid.WalkSpeed += _acceleration * deltaTime
-
-	humanoid.WalkSpeed = math.clamp(humanoid.WalkSpeed, speedBase, _speedMax)
 end
 
 function PlayerController:_DoKnockBack(deltaTime)
@@ -166,18 +169,28 @@ function PlayerController:_DoKnockBack(deltaTime)
 	end
 end
 
+function PlayerController:_UpdateSpeedOnServer(deltaTime: number)
+	timeToUpdateSpeedOnServer -= deltaTime
+
+	if timeToUpdateSpeedOnServer <= 0 then
+		timeToUpdateSpeedOnServer = timeToUpdateSpeedOnServerMax
+
+		Net.PlayerUpdatedSpeed.Fire(humanoid.WalkSpeed)
+	end
+end
+
 function PlayerController:TakeDamage(_knockBackSpeed: number, _knockBackDirection: Vector3)
-	if playerState == PlayerState.Static then
+	if playerState == PlayerState.TakingKnockBack or playerState == PlayerState.Static then
 		return
 	end
 
-	self:TakeDamage(_knockBackSpeed, _knockBackDirection)
+	self:TakeKnockBack(_knockBackSpeed, _knockBackDirection)
 
 	--TODO: perder moedas
 end
 
 function PlayerController:TakeKnockBack(_knockBackSpeed: number, _knockBackDirection: Vector3)
-	if playerState == PlayerState.Static then
+	if playerState == PlayerState.TakingKnockBack or playerState == PlayerState.Static then
 		return
 	end
 
@@ -191,10 +204,8 @@ function PlayerController:TakeKnockBack(_knockBackSpeed: number, _knockBackDirec
 
 	humanoid.Jump = true
 
-	character.PrimaryPart.CFrame = CFrame.new(
-		character.PrimaryPart.Position,
-		character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1)
-	)
+	character.PrimaryPart.CFrame =
+		CFrame.new(character.PrimaryPart.Position, character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1))
 end
 
 function PlayerController:OnAwake()
@@ -213,6 +224,8 @@ local function Update(time, deltaTime)
 	elseif playerState == PlayerState.TakingKnockBack then
 		PlayerController:_DoKnockBack(deltaTime)
 	end
+
+	PlayerController:_UpdateSpeedOnServer(deltaTime)
 end
 
 RunService.Stepped:Connect(Update)
