@@ -3,7 +3,7 @@
 ## Dependencies
 - This project uses `luau lsp`, `selene` and `stylua` to provide a cleaner method of linting and module fetching.
 - We use `Rojo` to connect our repository with Roblox.
-- We use `Aftman` and `Wally` to install dependencies.
+- We use `Rokit` to install some systems, and `Wally` to install dependencies.
 
 Make sure you have the following installed in your machine:
 - `VS Code`
@@ -18,18 +18,9 @@ Make sure you have the following installed in your machine:
 - Get the `StyLua` extension: (https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.stylua)
 - Get the `Rojo` extension: (https://marketplace.visualstudio.com/items?itemName=evaera.vscode-rojo)
 
-#### Install Aftman
+#### Install Rokit
 
-If you’ve followed this guide at least once, you already have `Aftman` installed! You can skip to the next session. The easiest way to install our tools is with `Aftman`, and the easiest way to install that is with `Rust` in your machine.
-
-**Warning**: If you run into issues with `Aftman`, you may try using `brew` instead, especially if you are on a Mac. Also, if commands like `wally` do not appear for you, confirm that the necessary commands were added to your system's environment path.
-
-Go ahead and open a new folder or existing repository, and open as a VS Code project.
-
-Open a 'git bash' terminal in your VS Code.
-
-- Type `cargo install aftman`: This will install the latest version of aftman.
-- Type `aftman install`: This will install the core dependencies in `aftman.toml`. These are useful tools like Rojo and Selene.
+If you’ve followed this guide at least once, you already have `Rokit` installed! You can skip to the next session. The easiest way to install our tools is with `Rokit`. Follow this link for [installation instructions](https://github.com/rojo-rbx/rokit).
 
 #### Initialize Wally Packages
 
@@ -37,15 +28,18 @@ Wally is already in the project, but isn’t doing anything yet, we need to inst
 
 - Type `wally install`: This will install the project dependencies in `wally.toml`. These are packages that this project uses.
 
+If commands like `wally` do not appear for you, confirm that the necessary commands were added to your system's environment PATH.
+
 #### Lune Commands and Rojo
 
-Now, you are finally ready to use `Rojo` to sync with Roblox. You may type `Cntrl + Shift + P` and type Rojo to find its commands, or you may call the Lune script. Using Lune is the recommended path for this project in particular because it is already set up to work with multiple places. It also makes sure to update `sourcemap.json` whenever a new file changes, which is crucial for linting and autocompletion.
+Now, you are finally ready to use `Rojo` to sync with Roblox. You may type `Cntrl + Shift + P` and type Rojo to find its commands, or you may call our Lune script. Using Lune is recommended because it sets up all the necessary systems that the project uses.
 
-- Type `lune run scripts/setup`. Then type the command you want. To start syncing with Rojo, choose 1, then type the name of the world you want to sync to.
+- First type `lune setup`. This will set up lune for this project.
+- Then type `lune run setup`. This initializes our ProjectManager script. You may now type the command you want. To start syncing with Rojo, choose 1, then type the name of the world you want to sync to.
 
 Now, whenever you save a script, the rojo sourcemap will be updated and Rojo will keep your changes synced with studio.
 
-You may stop Lune with `Cntrl + C`.
+You may stop this Lune command by typing Enter. If that does not work, `Cntrl + C`.
 
 #### When Connecting to Roblox Studio
 

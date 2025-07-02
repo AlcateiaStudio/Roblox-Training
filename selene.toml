@@ -1,6 +1,8 @@
-std = "roblox+overrides"
+std = "selene_definitions"
+
+[config]
+# Allow for `_G.__DEV__` (etc) with packages like React-lua
+global_usage = { ignore_pattern = "^__" }
 
 [rules]
-unused_variable = "allow"
-multiple_statements = "allow"
-parenthese_conditions = "allow"
+global_usage = "allow"
