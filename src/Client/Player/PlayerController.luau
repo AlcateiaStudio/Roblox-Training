@@ -28,7 +28,7 @@ local accelerationNormal = 12
 local accelerationDashing = 100
 local jumpAccelerationPercentage = 0.3
 
-local minimunSpeedToKnockBack = 20
+local minimunSpeedToKnockBack = 40
 local speedDifferenceToKnockPlayer = 40
 
 local knockBackDirection: Vector3 = Vector3.zero
@@ -204,8 +204,10 @@ function PlayerController:TakeKnockBack(_knockBackSpeed: number, _knockBackDirec
 
 	humanoid.Jump = true
 
-	character.PrimaryPart.CFrame =
-		CFrame.new(character.PrimaryPart.Position, character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1))
+	character.PrimaryPart.CFrame = CFrame.new(
+		character.PrimaryPart.Position,
+		character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1)
+	)
 end
 
 function PlayerController:OnAwake()

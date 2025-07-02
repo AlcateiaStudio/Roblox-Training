@@ -11,7 +11,7 @@ local playersToTestCollision = {}
 local playerCollisionOverlapParams: OverlapParams
 local playerSizeMultiplier = 1.5
 
-local timeToTestCollisionMax = 0.1
+local timeToTestCollisionMax = 0.05
 local timeToTestCollision = 0
 
 local function CreateOverlapParams()
