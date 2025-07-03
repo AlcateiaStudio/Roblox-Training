@@ -31,6 +31,8 @@ local jumpAccelerationPercentage = 0.3
 local minimunSpeedToKnockBack = 40
 local speedDifferenceToKnockPlayer = 40
 
+local jumpHeightBase = 7.2
+
 local knockBackDirection: Vector3 = Vector3.zero
 local knockBackTime = 0
 local knockBackTimeMax = 0.4
@@ -222,12 +224,25 @@ function PlayerController:TakeKnockBack(_knockBackSpeed: number, _knockBackDirec
 	humanoid.WalkSpeed = _knockBackSpeed
 	humanoid:Move(knockBackDirection, false)
 
-	humanoid.Jump = true
+	self:Jump(jumpHeightBase)
 
 	character.PrimaryPart.CFrame = CFrame.new(
 		character.PrimaryPart.Position,
 		character.PrimaryPart.Position + (Vector3.new(_knockBackDirection.X, 0, _knockBackDirection.Z) * -1)
 	)
+end
+
+function PlayerController:Jump(_jumpHeight: number)
+	if humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+		warn("O humanoid ja esta pulando!")
+
+		return
+	end
+
+	humanoid.JumpHeight = _jumpHeight
+	humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	task.wait(0.1)
+	humanoid.JumpHeight = jumpHeightBase
 end
 
 function PlayerController:OnAwake()
