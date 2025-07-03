@@ -15,7 +15,7 @@ local localPlayer = Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local humanoid = character:FindFirstChildOfClass("Humanoid")
 
-local playerModule = require(localPlayer.PlayerScripts.PlayerModule)
+local playerModule = (require)(localPlayer.PlayerScripts.PlayerModule)
 local controls = playerModule:GetControls()
 
 local PlayerState = { Normal = 0, TakingKnockBack = 1, Static = 3 }
