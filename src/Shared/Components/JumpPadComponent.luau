@@ -6,16 +6,16 @@ local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
-local ObjectThatCausesDamage = Component.new({ Tag = "ObjectThatCausesDamage", Extensions = {} })
+local JumpPad = Component.new({ Tag = "JumpPad", Extensions = {} })
 
 local timeOut = 2
-local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
+local collisionBodyPartsNames = { "LeftFoot", "RightFoot" }
 
-type CauseDamageCallback = (_knockBackSpeed: number, _knockBackDirection: Vector3) -> ()
+type SetJumpCallback = (_jumpHeight: number) -> ()
 
-local causeDamageCallback: CauseDamageCallback? = nil
+local setJumpCallback: SetJumpCallback? = nil
 
-local knockBackSpeed = 40
+local jumpHeight = 30
 
 local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
@@ -33,7 +33,7 @@ local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, charact
 	return partsToTrack
 end
 
-function ObjectThatCausesDamage:Start()
+function JumpPad:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component)
 			self.areaDetector = component
@@ -42,25 +42,25 @@ function ObjectThatCausesDamage:Start()
 			self:SetUpAreaDetectorEvents()
 		end)
 		:catch(function(err)
-			warn("ObjectThatCausesDamage failed to find AreaDetector in instance:", self.Instance, err)
+			warn("JumpPad failed to find AreaDetector in instance:", self.Instance, err)
 
 			return nil
 		end)
 end
 
-function ObjectThatCausesDamage:Stop() end
+function JumpPad:Stop() end
 
-function ObjectThatCausesDamage:SetUpAreaDetectorEvents()
+function JumpPad:SetUpAreaDetectorEvents()
 	self.areaDetector.Signals.Entered:Connect(function(player: Player)
-		self:CauseDamage(player)
+		self:SetJump(player)
 	end)
 end
 
-function ObjectThatCausesDamage:RegisterCauseDamageCallback(callback: CauseDamageCallback)
-	causeDamageCallback = callback
+function JumpPad:RegisterSetJumpCallback(callback: SetJumpCallback)
+	setJumpCallback = callback
 end
 
-function ObjectThatCausesDamage:CauseDamage(player: Player)
+function JumpPad:SetJump(player: Player)
 	if player ~= localPlayer then
 		return
 	end
@@ -79,12 +79,9 @@ function ObjectThatCausesDamage:CauseDamage(player: Player)
 		return
 	end
 
-	local collider: BasePart = self.areaDetector.collider
-	local knockBackDirection: Vector3 = character.PrimaryPart.CFrame.Position - collider.CFrame.Position
-
-	if causeDamageCallback ~= nil then
-		causeDamageCallback(knockBackSpeed, knockBackDirection)
+	if setJumpCallback ~= nil then
+		setJumpCallback(jumpHeight)
 	end
 end
 
-return ObjectThatCausesDamage
+return JumpPad

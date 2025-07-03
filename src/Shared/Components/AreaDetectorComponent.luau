@@ -1,6 +1,6 @@
 --// Services //--
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 --// Imports //--
@@ -11,8 +11,9 @@ local Signal = require(Packages.Signal)
 --// Types //--
 type Callback = () -> ()
 
---// Constants //--
-local UPDATE_RATE = 6
+--// Control //--
+local TIME_TO_UPDATE_MAX = 0.05
+local timeToUpdate = 0
 
 --------------------------------------------------------------------------------
 --// Component //--
@@ -70,16 +71,16 @@ function AreaDetector:Start()
 		end)
 	)
 
-	-- Connect to the step event at a set frame rate
-	local frame = 0
+	-- Connect to the step event
 	table.insert(
 		self.connections,
-		RunService.Heartbeat:Connect(function(...)
-			frame = (frame + 1) % UPDATE_RATE
-			if frame ~= 0 then
-				return
+		RunService.Heartbeat:Connect(function(deltaTime: number)
+			timeToUpdate -= deltaTime
+
+			if timeToUpdate <= 0 then
+				timeToUpdate = TIME_TO_UPDATE_MAX
+				self:_OnHeartbeat()
 			end
-			self:_OnHeartbeat(...)
 		end)
 	)
 end

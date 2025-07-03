@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local Net = require(ReplicatedStorage.Client.Net)
 
 local DashPanelComponent = require(ReplicatedStorage.Shared.Components.DashPanelComponent)
+local JumpPadComponent = require(ReplicatedStorage.Shared.Components.JumpPadComponent)
 local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
 
 local Players = game:GetService("Players")
@@ -114,6 +115,16 @@ local function OnUpdatePlayerStateFromServer(_playerState: number)
 	PlayerController:SetPlayerState(_playerState)
 end
 
+local function OnCollideWithJumpPad(_jumpHeight: number)
+	print("Collided with jump pad")
+
+	if playerState == PlayerState.TakingKnockBack or playerState == PlayerState.Static then
+		return
+	end
+
+	PlayerController:Jump(_jumpHeight)
+end
+
 function PlayerController:SubscribeToBodyPartsEvents()
 	for _, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart = character:FindFirstChild(v)
@@ -154,7 +165,7 @@ function PlayerController:_UpdateVelocity(deltaTime)
 	local _acceleration
 	local _speedMax
 
-	if isPlayerDashing == true then
+	if isPlayerDashing == true or isJumping == true then
 		_speedMax = speedMaxDashing
 	else
 		_speedMax = speedMaxNormal
@@ -270,7 +281,8 @@ RunService.Stepped:Connect(Update)
 Net.CollidedWithPlayer.On(OnCollidedWithPlayer)
 Net.UpdatePlayerState.On(OnUpdatePlayerStateFromServer)
 
-ObjectThatCausesDamageComponent:RegisterCauseDamageCallback(OnPlayerTakeDamage)
 DashPanelComponent:RegisterDashStateChangedCallback(OnPlayerDashStateChanged)
+JumpPadComponent:RegisterSetJumpCallback(OnCollideWithJumpPad)
+ObjectThatCausesDamageComponent:RegisterCauseDamageCallback(OnPlayerTakeDamage)
 
 return LifetimeObject.extend(PlayerController, "PlayerController")
