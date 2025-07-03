@@ -18,7 +18,7 @@ local humanoid = character:FindFirstChildOfClass("Humanoid")
 local playerModule = (require)(localPlayer.PlayerScripts.PlayerModule)
 local controls = playerModule:GetControls()
 
-local PlayerState = { Normal = 0, TakingKnockBack = 1, Static = 3 }
+local PlayerState = { Normal = 0, TakingKnockBack = 1, Static = 2 }
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand" }
 
 local speedBase = 10
