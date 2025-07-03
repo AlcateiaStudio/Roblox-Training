@@ -92,6 +92,26 @@ local function OnPlayerDashStateChanged(_isDashEnabled: boolean)
 	isPlayerDashing = _isDashEnabled
 end
 
+local function CheckIfStateIsValid(_playerState: number)
+	for _, playerStateValue in pairs(PlayerState) do
+		if _playerState == playerStateValue then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function OnUpdatePlayerStateFromServer(_playerState: number)
+	if CheckIfStateIsValid(_playerState) == false then
+		warn(`O estado \"{_playerState}\" nao e valido!`)
+
+		return
+	end
+
+	PlayerController:SetPlayerState(_playerState)
+end
+
 function PlayerController:SubscribeToBodyPartsEvents()
 	for _, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart = character:FindFirstChild(v)
@@ -233,6 +253,7 @@ end
 RunService.Stepped:Connect(Update)
 
 Net.CollidedWithPlayer.On(OnCollidedWithPlayer)
+Net.UpdatePlayerState.On(OnUpdatePlayerStateFromServer)
 
 ObjectThatCausesDamageComponent:RegisterCauseDamageCallback(OnPlayerTakeDamage)
 DashPanelComponent:RegisterDashStateChangedCallback(OnPlayerDashStateChanged)

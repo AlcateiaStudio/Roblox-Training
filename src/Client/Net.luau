@@ -154,6 +154,7 @@ Queue.Reliable[0] = table.create(256)
 Queue.Reliable[1] = table.create(256)
 Queue.Reliable[2] = table.create(256)
 Queue.Reliable[3] = table.create(256)
+Queue.Reliable[5] = table.create(256)
 local function ReadEVENT_RaceStarted(): (nil)
 	return nil
 end
@@ -215,6 +216,13 @@ local function WriteEVENT_PlayerUpdatedSpeed(Value: number): ()
 	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
 end
 
+local function ReadEVENT_UpdatePlayerState(): (number)
+	-- Read BLOCK: 4 bytes
+	local BLOCK_START = Read(4)
+	local Value = buffer.readu32(RecieveBuffer, BLOCK_START + 0)
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -232,6 +240,9 @@ if not RunService:IsRunning() then
 	},
 	PlayerUpdatedSpeed = {
 		Fire = NOOP
+	},
+	UpdatePlayerState = {
+		On = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -309,6 +320,16 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 					warn("[Blink]: Event queue of \"CollidedWithPlayer\" exceeded 256, did you forget to implement a listener?")
 				end
 				table.insert(Queue.Reliable[3], {Value1, Value2} :: {any})
+			end
+		elseif Index == 5 then
+			local Value: number = ReadEVENT_UpdatePlayerState()
+			if Events.Reliable[5] ~= nil then
+				Events.Reliable[5](Value)
+			else
+				if #Queue.Reliable[5] > 256 then
+					warn("[Blink]: Event queue of \"UpdatePlayerState\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[5], {Value} :: {any})
 			end
 		end
 	end
@@ -389,6 +410,20 @@ local Returns = table.freeze({
 	PlayerUpdatedSpeed = {
 		Fire = function(Value: number): ()
 			WriteEVENT_PlayerUpdatedSpeed(Value)
+		end
+	},
+	UpdatePlayerState = {
+		On = function(Listener: (Value: number) -> ()): () -> ()
+			Events.Reliable[5] = Listener
+			for Index, Arguments in Queue.Reliable[5] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[5] = {}
+			return function (): ()
+				if Events.Reliable[5] == Listener then
+					Events.Reliable[5] = nil
+				end
+			end
 		end
 	},
 })

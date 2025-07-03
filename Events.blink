@@ -34,3 +34,10 @@ event PlayerUpdatedSpeed {
     call: SingleSync,
     data: u32
 }
+
+event UpdatePlayerState {
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+    data: u32
+}
