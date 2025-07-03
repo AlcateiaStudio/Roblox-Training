@@ -12,14 +12,14 @@ local AreaDetectorStartRaceComponenteInstance
 local AreaDetectorFinishRaceComponenteInstance
 
 function OnStart()
-	local AreaDetectorStartRaceGameObject: Model = workspace:WaitForChild("AreaDetectorRunStart", 10) :: Model
+	local AreaDetectorStartRaceGameObject: Model = workspace:WaitForChild("Tabajara Track"):WaitForChild("AreaDetectorRunStart", 10) :: Model
 	assert(AreaDetectorStartRaceGameObject, "AreaDetector not found in workspace")
 	AreaDetectorComponentClass:WaitForInstance(AreaDetectorStartRaceGameObject):andThen(function(component)
 		AreaDetectorStartRaceComponenteInstance = component
 		RunService.Heartbeat:Connect(_OnHeartbeat)
 	end)
 
-	local AreaDetectorFinishRaceGameObject: Model = workspace:WaitForChild("AreaDetectorRunFinish", 10) :: Model
+	local AreaDetectorFinishRaceGameObject: Model = workspace:WaitForChild("Tabajara Track"):WaitForChild("AreaDetectorRunFinish", 10) :: Model
 	assert(AreaDetectorFinishRaceGameObject, "AreaDetector not found in workspace")
 	AreaDetectorComponentClass:WaitForInstance(AreaDetectorFinishRaceGameObject):andThen(function(component)
 		AreaDetectorFinishRaceComponenteInstance = component
@@ -34,46 +34,40 @@ function OnStart()
 	MatchManagerModule.OnFinishPodiumViewCallback:Connect(OnFinishPodium)
 end
 
-function OnCharactersOnPositionToStartRace(listaDeCharacters)
-	ToggleCharacterLock(listaDeCharacters, true)
+function OnCharactersOnPositionToStartRace(listaDePlayers)
+	ToggleCharacterLock(listaDePlayers, true)
 end
 
-function OnStartRace(listaDePlayers, listaDeCharacters)
+function OnStartRace(listaDePlayers)
 	print("Race Will Start")
+	ToggleCharacterLock(listaDePlayers, false)
 	Net.RaceStarted.FireList(listaDePlayers)
-	ToggleCharacterLock(listaDeCharacters, false)
 end
 
 function OnPlayerCrossedFinishLinde(player)
 	print(`Player {player} Crossed`)
 end
-function OnLastPlayerCrossedFinishLinde(player, listaDeCharacters)
+function OnLastPlayerCrossedFinishLinde(player, listaDePlayers)
 	print(`Player {player} Crossed On Last`)
-	ToggleCharacterLock(listaDeCharacters, true)
+	ToggleCharacterLock(listaDePlayers, true)
 end
 
-function OnFinishPodium(listaDePlayers, listaDeCharacters)
+function OnFinishPodium(listaDePlayers)
 	print("Finished Podium view")
+	ToggleCharacterLock(listaDePlayers, false)
 	Net.RaceFinished.FireList(listaDePlayers)
-	ToggleCharacterLock(listaDeCharacters, false)
 end
 
-function ToggleCharacterLock(listaDeCharacters, lock)
-	for character, _ in pairs(listaDeCharacters) do
-		if lock == true then
-			CharacterUtils:LockCharacter(character.character)
-		else
-			CharacterUtils:UnlockCharacter(character.character)
-		end
+function ToggleCharacterLock(listaDePlayers, lock)
+	local playerStateValue = 0
+	if lock == true then
+		playerStateValue = 2
 	end
+	Net.UpdatePlayerState.FireList(listaDePlayers, playerStateValue)
 end
 
 function _OnHeartbeat(deltaTime)
-	MatchManagerModule:Update(
-		deltaTime,
-		AreaDetectorStartRaceComponenteInstance,
-		AreaDetectorFinishRaceComponenteInstance
-	)
+	MatchManagerModule:Update(deltaTime, AreaDetectorStartRaceComponenteInstance, AreaDetectorFinishRaceComponenteInstance)
 end
 
 OnStart()

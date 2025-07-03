@@ -8,6 +8,7 @@ MatchManagerModule.ManagerStatus = {
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local ExplorerUtils = require(ReplicatedStorage.Shared.Utils.ExplorerUtils)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local Max_Player_To_Run = 4
@@ -37,16 +38,9 @@ MatchManagerModule.OnFinishPodiumViewCallback = Signal.new()
 MatchManagerModule.CurrentManagerStatus = MatchManagerModule.ManagerStatus.WaitingForTp
 
 function MatchManagerModule:Start()
-	self:GetChildsFromName(TransformsToStarRace, "StartRacePositionModel")
-	self:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
+	ExplorerUtils:GetChildsFromName(TransformsToStarRace, "StartRacePositionModel")
+	ExplorerUtils:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
 	self.ResteAllVariables()
-end
-
-function MatchManagerModule:GetChildsFromName(TransformsToStarRace, name: string)
-	local startRaceModel = workspace:FindFirstChild(name, 10)
-	for i, startRacePad: BasePart in ipairs(startRaceModel:GetChildren()) do
-		table.insert(TransformsToStarRace, startRacePad.CFrame.Position)
-	end
 end
 
 function MatchManagerModule:AdjustPostionFromObjectsToList(charactersInArea, TransformsToStarRace, offset)
@@ -81,7 +75,7 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace, VectorToOffsetPad)
 		CurrentTimeToTP = 0
 		task.wait()
-		self.OnPlayersTeleportedToStartRace:Fire(listaDeCharacters)
+		self.OnPlayersTeleportedToStartRace:Fire(listaDePlayers)
 	end
 end
 
@@ -100,7 +94,7 @@ function MatchManagerModule:StartRaceRoutine(deltaTime)
 	end
 
 	task.wait()
-	self.OnStartedRace:Fire(listaDePlayers, listaDeCharacters)
+	self.OnStartedRace:Fire(listaDePlayers)
 end
 
 function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRaceComponenteInstance)
@@ -108,10 +102,7 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRaceComponenteInsta
 		QuantityPlayersCrossedFinishLine += 1
 
 		if #listaDePlayers == QuantityPlayersCrossedFinishLine then
-			self.OnLastPlayerCrossedFinishLine:Fire(
-				AreaDetectorFinishRaceComponenteInstance.playersInArea[1],
-				listaDeCharacters
-			)
+			self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRaceComponenteInstance.playersInArea[1], listaDePlayers)
 			self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
 			task.wait()
 			self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
@@ -128,7 +119,7 @@ function MatchManagerModule:PodiumView(deltaTime)
 		currentTimeOnPodium = 0
 		self.CurrentManagerStatus = self.ManagerStatus.WaitingForTp
 		task.wait()
-		self.OnFinishPodiumViewCallback:Fire(listaDePlayers, listaDeCharacters)
+		self.OnFinishPodiumViewCallback:Fire(listaDePlayers)
 		self.ResteAllVariables()
 	end
 end
@@ -136,11 +127,7 @@ end
 function MatchManagerModule:Update(deltaTime, AreaDetectorStartRace, AreaDetectorFinishRace)
 	if self.CurrentManagerStatus == self.ManagerStatus.WaitingForTp then
 		if #AreaDetectorStartRace.playersInArea >= MinimunPlayersToStart then
-			self:WaitingOnPadToStartRace(
-				deltaTime,
-				AreaDetectorStartRace.playersInArea,
-				AreaDetectorStartRace.charactersInArea
-			)
+			self:WaitingOnPadToStartRace(deltaTime, AreaDetectorStartRace.playersInArea, AreaDetectorStartRace.charactersInArea)
 		else
 			CurrentTimeToTP = 0
 		end
