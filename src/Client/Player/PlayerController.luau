@@ -6,9 +6,9 @@ local RunService = game:GetService("RunService")
 
 local Net = require(ReplicatedStorage.Client.Net)
 
-local DashPanelComponent = require(ReplicatedStorage.Shared.Components.DashPanelComponent)
-local JumpPadComponent = require(ReplicatedStorage.Shared.Components.JumpPadComponent)
-local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Shared.Components.ObjectThatCausesDamageComponent)
+local DashPanelComponent = require(ReplicatedStorage.Client.Components.DashPanelComponent)
+local JumpPadComponent = require(ReplicatedStorage.Client.Components.JumpPadComponent)
+local ObjectThatCausesDamageComponent = require(ReplicatedStorage.Client.Components.ObjectThatCausesDamageComponent)
 
 local Players = game:GetService("Players")
 

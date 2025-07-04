@@ -33,18 +33,13 @@ local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: M
 end
 
 function ForceApplier:Start()
-	print("Setup force applier 0")
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component)
 			self.areaDetector = component
 			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
-			print("Setup force applier 1")
-
 			self:SetupAnimationVariables()
 			self:SetUpAreaDetectorEvents()
-
-			print("Setup force applier 2")
 		end)
 		:catch(function(err)
 			warn("ForceApplier failed to find AreaDetector in instance:", self.Instance, err)
@@ -62,8 +57,8 @@ function ForceApplier:SetUpAreaDetectorEvents()
 end
 
 function ForceApplier:SetupAnimationVariables()
-	local trigger: BasePart = self.Instance.FindFirstChild("Trigger")
-	local collision: BasePart = self.Instance.FindFirstChild("Collision")
+	local trigger: BasePart = self.Instance:FindFirstChild("Trigger")
+	local collision: BasePart = self.Instance:FindFirstChild("Collision")
 
 	self.applyingForce = false
 	self.positionBase = collision.CFrame.Position
@@ -89,13 +84,11 @@ function ForceApplier:OnPlayerTrigger(player: Player)
 		return
 	end
 
-	print("Collided with player")
 	self:ApplyForce()
 end
 
 function ForceApplier:ApplyForce()
 	if self.applyingForce == true then
-		print("Already applying force.")
 		return
 	end
 
@@ -113,10 +106,11 @@ function ForceApplier:ApplyForce()
 end
 
 function ForceApplier:MoveToPosition(_position: Vector3, _time: number)
+	local collision: BasePart = self.Instance:FindFirstChild("Collision")
 	local tweenInfo = TweenInfo.new(_time)
 	local endValues = { Position = _position }
 
-	local tween = TweenService:Create(self.Instance, tweenInfo, endValues)
+	local tween = TweenService:Create(collision, tweenInfo, endValues)
 
 	tween:Play()
 end
