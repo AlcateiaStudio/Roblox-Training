@@ -17,7 +17,7 @@ local setJumpCallback: SetJumpCallback? = nil
 
 local jumpHeight = 30
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do

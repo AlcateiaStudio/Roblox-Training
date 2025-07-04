@@ -17,10 +17,10 @@ local dashStateChangedCallback: DashStateChangedCallback? = nil
 
 local playersInArea = {}
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(player: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
 
-	for i, v in pairs(collisionBodyPartsNames) do
+	for _, v in pairs(collisionBodyPartsNames) do
 		local collisionBodyPart = character:FindFirstChild(v)
 
 		if collisionBodyPart:IsA("BasePart") then

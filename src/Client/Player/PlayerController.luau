@@ -116,8 +116,6 @@ local function OnUpdatePlayerStateFromServer(_playerState: number)
 end
 
 local function OnCollideWithJumpPad(_jumpHeight: number)
-	print("Collided with jump pad")
-
 	if playerState == PlayerState.TakingKnockBack or playerState == PlayerState.Static then
 		return
 	end
