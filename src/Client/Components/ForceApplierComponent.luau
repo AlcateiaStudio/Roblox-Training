@@ -57,12 +57,12 @@ function ForceApplier:SetUpAreaDetectorEvents()
 end
 
 function ForceApplier:SetupAnimationVariables()
-	local trigger: BasePart = self.Instance:FindFirstChild("Trigger")
 	local collision: BasePart = self.Instance:FindFirstChild("Collision")
+	local endPosition: BasePart = self.Instance:FindFirstChild("EndPosition")
 
 	self.applyingForce = false
 	self.positionBase = collision.CFrame.Position
-	self.positionApplyingForce = trigger.CFrame.Position
+	self.positionApplyingForce = endPosition.CFrame.Position
 end
 
 function ForceApplier:OnPlayerTrigger(player: Player)
