@@ -108,7 +108,7 @@ end
 function ForceApplier:MoveToPosition(_position: Vector3, _time: number)
 	local collision: BasePart = self.Instance:FindFirstChild("Collision")
 	local tweenInfo = TweenInfo.new(_time)
-	local endValues = { Position = _position }
+	local endValues = { CFRame = CFrame.new(_position) }
 
 	local tween = TweenService:Create(collision, tweenInfo, endValues)
 
