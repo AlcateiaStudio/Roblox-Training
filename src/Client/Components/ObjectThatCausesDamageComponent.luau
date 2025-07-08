@@ -40,6 +40,7 @@ function ObjectThatCausesDamage:Start()
 			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self:SetUpAreaDetectorEvents()
+			self:MakeCollidersTransparent()
 		end)
 		:catch(function(err)
 			warn("ObjectThatCausesDamage failed to find AreaDetector in instance:", self.Instance, err)
@@ -54,6 +55,12 @@ function ObjectThatCausesDamage:SetUpAreaDetectorEvents()
 	self.areaDetector.Signals.Entered:Connect(function(player: Player)
 		self:CauseDamage(player)
 	end)
+end
+
+function ObjectThatCausesDamage:MakeCollidersTransparent()
+	local collision: BasePart = self.Instance:FindFirstChild("Collision")
+
+	collision.Transparency = 1
 end
 
 function ObjectThatCausesDamage:RegisterCauseDamageCallback(callback: CauseDamageCallback)

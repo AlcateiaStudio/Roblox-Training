@@ -40,6 +40,7 @@ function JumpPad:Start()
 			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self:SetUpAreaDetectorEvents()
+			self:MakeCollidersTransparent()
 		end)
 		:catch(function(err)
 			warn("JumpPad failed to find AreaDetector in instance:", self.Instance, err)
@@ -54,6 +55,12 @@ function JumpPad:SetUpAreaDetectorEvents()
 	self.areaDetector.Signals.Entered:Connect(function(player: Player)
 		self:SetJump(player)
 	end)
+end
+
+function JumpPad:MakeCollidersTransparent()
+	local collision: BasePart = self.Instance:FindFirstChild("Collision")
+
+	collision.Transparency = 1
 end
 
 function JumpPad:RegisterSetJumpCallback(callback: SetJumpCallback)

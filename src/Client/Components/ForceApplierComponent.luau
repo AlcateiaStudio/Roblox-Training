@@ -40,6 +40,7 @@ function ForceApplier:Start()
 
 			self:SetupAnimationVariables()
 			self:SetUpAreaDetectorEvents()
+			self:MakeCollidersTransparent()
 		end)
 		:catch(function(err)
 			warn("ForceApplier failed to find AreaDetector in instance:", self.Instance, err)
@@ -63,6 +64,14 @@ function ForceApplier:SetupAnimationVariables()
 	self.applyingForce = false
 	self.positionBase = collision.CFrame.Position
 	self.positionApplyingForce = endPosition.CFrame.Position
+end
+
+function ForceApplier:MakeCollidersTransparent()
+	local trigger: BasePart = self.Instance:FindFirstChild("Trigger")
+	local endPosition: BasePart = self.Instance:FindFirstChild("EndPosition")
+
+	trigger.Transparency = 1
+	endPosition.Transparency = 1
 end
 
 function ForceApplier:OnPlayerTrigger(player: Player)
@@ -108,7 +117,7 @@ end
 function ForceApplier:MoveToPosition(_position: Vector3, _time: number)
 	local collision: BasePart = self.Instance:FindFirstChild("Collision")
 	local tweenInfo = TweenInfo.new(_time)
-	local endValues = { CFRame = CFrame.new(_position) }
+	local endValues = { CFrame = CFrame.new(_position) }
 
 	local tween = TweenService:Create(collision, tweenInfo, endValues)
 
