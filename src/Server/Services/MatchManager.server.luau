@@ -3,7 +3,7 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local AreaDetectorComponentClass = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
-local CharacterUtils = require(ReplicatedStorage.Shared.Utils.CharacterUtils)
+local MatchManagerInfosModule = require(ServerScriptService.Server.Services.MatchManagerInfo)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
 local Net = require(ServerScriptService.Server.Net)
@@ -26,7 +26,7 @@ function OnStart()
 	end)
 
 	MatchManagerModule:Start()
-
+	MatchManagerInfosModule:Start()
 	MatchManagerModule.OnPlayersTeleportedToStartRace:Connect(OnCharactersOnPositionToStartRace)
 	MatchManagerModule.OnStartedRace:Connect(OnStartRace)
 	MatchManagerModule.OnPlayerCrossedFinishLine:Connect(OnPlayerCrossedFinishLinde)

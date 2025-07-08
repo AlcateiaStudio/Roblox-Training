@@ -152,6 +152,7 @@ local Queue: any = {
 }
 
 Queue.Reliable[4] = table.create(256)
+Queue.Reliable[6] = table.create(256)
 local function WriteEVENT_RaceStarted(Value: nil): ()
 	-- Allocate BLOCK: 1 bytes
 	local BLOCK_START = Allocate(1)
@@ -222,6 +223,13 @@ local function WriteEVENT_UpdatePlayerState(Value: number): ()
 	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
 end
 
+local function ReadEVENT_SendCoinsOnPlayerEntered(): (number)
+	-- Read BLOCK: 4 bytes
+	local BLOCK_START = Read(4)
+	local Value = buffer.readu32(RecieveBuffer, BLOCK_START + 0)
+	return Value
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -257,6 +265,9 @@ if not RunService:IsRunning() then
 		FireAll = NOOP,
 		FireList = NOOP,
 		FireExcept = NOOP
+	},
+	SendCoinsOnPlayerEntered = {
+		On = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -324,6 +335,16 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 					warn("[Blink]: Event queue of \"PlayerUpdatedSpeed\" exceeded 256, did you forget to implement a listener?")
 				end
 				table.insert(Queue.Reliable[4], {Player, Value} :: {any})
+			end
+		elseif Index == 6 then
+			local Value: number = ReadEVENT_SendCoinsOnPlayerEntered()
+			if Events.Reliable[6] ~= nil then
+				Events.Reliable[6](Player, Value)
+			else
+				if #Queue.Reliable[6] > 256 then
+					warn("[Blink]: Event queue of \"SendCoinsOnPlayerEntered\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[6], {Player, Value} :: {any})
 			end
 		end
 	end
@@ -588,6 +609,20 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
+	},
+	SendCoinsOnPlayerEntered = {
+		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
+			Events.Reliable[6] = Listener
+			for Index, Arguments in Queue.Reliable[6] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[6] = {}
+			return function (): ()
+				if Events.Reliable[6] == Listener then
+					Events.Reliable[6] = nil
+				end
+			end
+		end
 	},
 })
 type BLINK_EVENTS_SYMBOL = typeof(Returns)

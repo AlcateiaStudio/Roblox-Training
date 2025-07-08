@@ -41,3 +41,10 @@ event UpdatePlayerState {
     call: SingleSync,
     data: u32
 }
+
+event SendCoinsOnPlayerEntered {
+    from: Client,
+    type: Reliable,
+    call: SingleSync,
+    data: u32
+}
