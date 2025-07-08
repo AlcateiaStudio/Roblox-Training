@@ -7,7 +7,9 @@ MatchManagerModule.ManagerStatus = {
 }
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
+local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
 local ExplorerUtils = require(ReplicatedStorage.Shared.Utils.ExplorerUtils)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
@@ -97,17 +99,17 @@ function MatchManagerModule:StartRaceRoutine(deltaTime)
 	self.OnStartedRace:Fire(listaDePlayers)
 end
 
-function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRaceComponenteInstance)
-	if #AreaDetectorFinishRaceComponenteInstance.playersInArea >= 1 then
+function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorComponent.AreaDetector)
+	if #AreaDetectorFinishRace.playersInArea >= 1 then
 		QuantityPlayersCrossedFinishLine += 1
 
 		if #listaDePlayers == QuantityPlayersCrossedFinishLine then
-			self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRaceComponenteInstance.playersInArea[1], listaDePlayers)
+			self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[1], listaDePlayers)
 			self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
 			task.wait()
 			self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
 		else
-			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRaceComponenteInstance.playersInArea[1])
+			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[1])
 		end
 	end
 end
@@ -124,7 +126,7 @@ function MatchManagerModule:PodiumView(deltaTime)
 	end
 end
 
-function MatchManagerModule:Update(deltaTime, AreaDetectorStartRace, AreaDetectorFinishRace)
+function MatchManagerModule:Update(deltaTime, AreaDetectorStartRace: AreaDetectorComponent.AreaDetector, AreaDetectorFinishRace)
 	if self.CurrentManagerStatus == self.ManagerStatus.WaitingForTp then
 		if #AreaDetectorStartRace.playersInArea >= MinimunPlayersToStart then
 			self:WaitingOnPadToStartRace(deltaTime, AreaDetectorStartRace.playersInArea, AreaDetectorStartRace.charactersInArea)
