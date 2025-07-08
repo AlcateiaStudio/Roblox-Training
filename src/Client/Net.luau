@@ -230,6 +230,13 @@ local function WriteEVENT_SendCoinsOnPlayerEntered(Value: number): ()
 	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
 end
 
+local function WriteEVENT_PlayerCollidedWithForceApplier(Value: number): ()
+	-- Allocate BLOCK: 5 bytes
+	local BLOCK_START = Allocate(5)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -252,6 +259,9 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	SendCoinsOnPlayerEntered = {
+		Fire = NOOP
+	},
+	PlayerCollidedWithForceApplier = {
 		Fire = NOOP
 	},
 	})
@@ -439,6 +449,17 @@ local Returns = table.freeze({
 	SendCoinsOnPlayerEntered = {
 		Fire = function(Value: number): ()
 			WriteEVENT_SendCoinsOnPlayerEntered(Value)
+		end
+	},
+	PlayerCollidedWithForceApplier = {
+		Fire = function(Value: number): ()
+			local Previous = Save()
+			Load()
+			WriteEVENT_PlayerCollidedWithForceApplier(Value)
+			local Buffer = buffer.create(SendCursor)
+			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
+			Unreliable:FireServer(Buffer, SendInstances)
+			Load(Previous)
 		end
 	},
 })
