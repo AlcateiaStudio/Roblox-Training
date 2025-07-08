@@ -223,6 +223,13 @@ local function ReadEVENT_UpdatePlayerState(): (number)
 	return Value
 end
 
+local function WriteEVENT_SendCoinsOnPlayerEntered(Value: number): ()
+	-- Allocate BLOCK: 5 bytes
+	local BLOCK_START = Allocate(5)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 6)
+	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -243,6 +250,9 @@ if not RunService:IsRunning() then
 	},
 	UpdatePlayerState = {
 		On = NOOP
+	},
+	SendCoinsOnPlayerEntered = {
+		Fire = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -424,6 +434,11 @@ local Returns = table.freeze({
 					Events.Reliable[5] = nil
 				end
 			end
+		end
+	},
+	SendCoinsOnPlayerEntered = {
+		Fire = function(Value: number): ()
+			WriteEVENT_SendCoinsOnPlayerEntered(Value)
 		end
 	},
 })
