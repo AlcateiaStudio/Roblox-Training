@@ -5,7 +5,7 @@ local Component = require(ReplicatedStorage.Packages.Component)
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
+local AreaDetectorComponent = require(ReplicatedStorage.Client.Components.ClientAreaDetector)
 local JumpPad = Component.new({ Tag = "JumpPad", Extensions = {} })
 
 local timeOut = 2
@@ -17,7 +17,7 @@ local setJumpCallback: SetJumpCallback? = nil
 
 local jumpHeight = 30
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do
@@ -35,9 +35,9 @@ end
 
 function JumpPad:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
-		:andThen(function(component)
+		:andThen(function(component: AreaDetectorComponent.AreaDetector)
 			self.areaDetector = component
-			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
+			component:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self:SetUpAreaDetectorEvents()
 			self:MakeCollidersTransparent()
