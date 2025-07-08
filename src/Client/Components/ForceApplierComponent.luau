@@ -13,7 +13,7 @@ local ForceApplier = Component.new({ Tag = "ForceApplier", Extensions = {} })
 local timeOut = 2
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do
@@ -33,7 +33,7 @@ function ForceApplier:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component: AreaDetectorComponent.AreaDetector)
 			self.areaDetector = component
-			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
+			component:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self.ID = self.Instance:GetAttribute("ID")
 
