@@ -48,3 +48,10 @@ event SendCoinsOnPlayerEntered {
     call: SingleSync,
     data: u32
 }
+
+event PlayerCollidedWithForceApplier {
+    from: Client,
+    type: Unreliable,
+    call: SingleSync,
+    data: u32
+}

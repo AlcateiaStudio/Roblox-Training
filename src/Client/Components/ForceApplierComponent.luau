@@ -1,5 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Net = require(ReplicatedStorage.Client.Net)
+
 local Component = require(ReplicatedStorage.Packages.Component)
 
 local Players = game:GetService("Players")
@@ -8,15 +10,10 @@ local localPlayer = Players.LocalPlayer
 local AreaDetectorComponent = require(ReplicatedStorage.Client.Components.ClientAreaDetector)
 local ForceApplier = Component.new({ Tag = "ForceApplier", Extensions = {} })
 
-local TweenService = game:GetService("TweenService")
-
 local timeOut = 2
 local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot" }
 
-local animationDuration = 0.5
-local timeToGoBack = 1
-
-local function OnCharacterAdded_GetNecessaryPartsToTrack(character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do
@@ -36,11 +33,11 @@ function ForceApplier:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
 		:andThen(function(component: AreaDetectorComponent.AreaDetector)
 			self.areaDetector = component
-			component:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
+			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
-			self:SetupAnimationVariables()
+			self.ID = self.Instance:GetAttribute("ID")
+
 			self:SetUpAreaDetectorEvents()
-			self:MakeCollidersTransparent()
 		end)
 		:catch(function(err)
 			warn("ForceApplier failed to find AreaDetector in instance:", self.Instance, err)
@@ -55,23 +52,6 @@ function ForceApplier:SetUpAreaDetectorEvents()
 	self.areaDetector.Signals.Entered:Connect(function(player: Player)
 		self:OnPlayerTrigger(player)
 	end)
-end
-
-function ForceApplier:SetupAnimationVariables()
-	local collision: BasePart = self.Instance:FindFirstChild("Collision")
-	local endPosition: BasePart = self.Instance:FindFirstChild("EndPosition")
-
-	self.applyingForce = false
-	self.positionBase = collision.CFrame.Position
-	self.positionApplyingForce = endPosition.CFrame.Position
-end
-
-function ForceApplier:MakeCollidersTransparent()
-	local trigger: BasePart = self.Instance:FindFirstChild("Trigger")
-	local endPosition: BasePart = self.Instance:FindFirstChild("EndPosition")
-
-	trigger.Transparency = 1
-	endPosition.Transparency = 1
 end
 
 function ForceApplier:OnPlayerTrigger(player: Player)
@@ -93,35 +73,7 @@ function ForceApplier:OnPlayerTrigger(player: Player)
 		return
 	end
 
-	self:ApplyForce()
-end
-
-function ForceApplier:ApplyForce()
-	if self.applyingForce == true then
-		return
-	end
-
-	self.applyingForce = true
-
-	self:MoveToPosition(self.positionApplyingForce, animationDuration)
-
-	wait(animationDuration + timeToGoBack)
-
-	self:MoveToPosition(self.positionBase, animationDuration)
-
-	wait(animationDuration)
-
-	self.applyingForce = false
-end
-
-function ForceApplier:MoveToPosition(_position: Vector3, _time: number)
-	local collision: BasePart = self.Instance:FindFirstChild("Collision")
-	local tweenInfo = TweenInfo.new(_time)
-	local endValues = { CFrame = CFrame.new(_position) }
-
-	local tween = TweenService:Create(collision, tweenInfo, endValues)
-
-	tween:Play()
+	Net.PlayerCollidedWithForceApplier.Fire(self.ID)
 end
 
 return ForceApplier
