@@ -5,7 +5,7 @@ local Component = require(ReplicatedStorage.Packages.Component)
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
+local AreaDetectorComponent = require(ReplicatedStorage.Client.Components.ClientAreaDetector)
 local DashPanel = Component.new({ Tag = "DashPanel", Extensions = {} })
 
 local timeOut = 2
@@ -17,7 +17,7 @@ local dashStateChangedCallback: DashStateChangedCallback? = nil
 
 local playersInArea = {}
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do
@@ -57,15 +57,13 @@ end
 
 function DashPanel:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
-		:andThen(function(component)
+		:andThen(function(component: AreaDetectorComponent.AreaDetector)
 			self.areaDetector = component
-			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
-
+			component:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 			self:SetUpAreaDetectorEvents()
 		end)
 		:catch(function(err)
 			warn("DashPanel failed to find AreaDetector in instance:", self.Instance, err)
-
 			return nil
 		end)
 end

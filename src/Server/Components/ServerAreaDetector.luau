@@ -11,7 +11,7 @@ local Signal = require(Packages.Signal)
 --// Types //--
 type Callback = () -> ()
 
-export type ServerAreaDetector = {
+export type AreaDetector = {
 	Instance: Model,
 	collider: BasePart,
 	areaSize: Vector3,
@@ -27,10 +27,10 @@ export type ServerAreaDetector = {
 	},
 	connections: { RBXScriptConnection },
 
-	Start: (self: ServerAreaDetector) -> (),
-	Stop: (self: ServerAreaDetector) -> (),
-	UpdateExistingPlayers: (self: ServerAreaDetector) -> (),
-	RegisterOnCharacterAdded: (self: ServerAreaDetector, callback: (Player, Model) -> { BasePart }) -> (),
+	Start: (self: AreaDetector) -> (),
+	Stop: (self: AreaDetector) -> (),
+	UpdateExistingPlayers: (self: AreaDetector) -> (),
+	RegisterOnCharacterAdded: (self: AreaDetector, callback: (Player, Model) -> { BasePart }) -> (),
 }
 
 --// Control //--
