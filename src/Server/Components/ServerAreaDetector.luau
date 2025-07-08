@@ -49,11 +49,11 @@ areaDetectorOverlapParams.FilterDescendantsInstances = {}
 
 function AreaDetector:Start()
 	if not self or not self.Instance then
-		warn("[AreaDetector] - No instance found")
+		warn("No instance found")
 		return
 	end
 
-	print("Starting for AreaDetector", self.Instance.Name)
+	print("Starting for AreaDetector", self.Instance)
 
 	assert(self.Instance:IsA("Model"), "AreaDetector must be a model.")
 	assert(self.Instance.PrimaryPart, "No primary part found in AreaDetector instance.")
@@ -71,11 +71,10 @@ function AreaDetector:Start()
 	}
 
 	self.Callbacks = {}
+	self.connections = {}
 
 	-- Check for existing players
 	self:UpdateExistingPlayers()
-
-	self.connections = {}
 
 	table.insert(
 		self.connections,

@@ -1,11 +1,5 @@
 {
 	"name": "MadeInBugs Project",
-	"servePlaceIds": [
-		117994607556693,
-		110897286237793,
-		70555577888117,
-		121153513196153
-	],
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {

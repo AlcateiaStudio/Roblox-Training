@@ -50,17 +50,13 @@ areaDetectorOverlapParams.FilterDescendantsInstances = {}
 
 function AreaDetector:Start()
 	if not self or not self.Instance then
-		warn("[AreaDetector] - No instance found")
+		warn("No instance found")
 		return
 	end
 
-	print("Starting for AreaDetector", self.Instance.Name)
+	print("Starting for AreaDetector", self.Instance)
 
 	assert(self.Instance:IsA("Model"), "AreaDetector must be a model.")
-	assert(self.Instance.PrimaryPart, "No primary part found in AreaDetector instance.")
-
-	self.collider = self.Instance.PrimaryPart
-	self.areaSize = self.collider.Size
 
 	self.partsToDetect = {} -- Parts to check for collision
 	self.isPlayerInArea = false -- Whether local player is in area
@@ -71,24 +67,20 @@ function AreaDetector:Start()
 	}
 
 	self.Callbacks = {}
-
-	-- Setup character tracking
-	self:_SetupCharacterTracking()
-
 	self.connections = {}
 
-	-- Connect to the step event
-	table.insert(
-		self.connections,
-		RunService.Heartbeat:Connect(function(deltaTime: number)
-			timeToUpdate -= deltaTime
+	-- Handle PrimaryPart loading asynchronously
+	task.spawn(function()
+		while not self.Instance.PrimaryPart do
+			task.wait(1)
+		end
 
-			if timeToUpdate <= 0 then
-				timeToUpdate = TIME_TO_UPDATE_MAX
-				self:_OnHeartbeat()
-			end
-		end)
-	)
+		self.collider = self.Instance.PrimaryPart
+		self.areaSize = self.collider.Size
+
+		self:_SetupCharacterTracking()
+		self:_StartHeartbeat()
+	end)
 end
 
 function AreaDetector:_SetupCharacterTracking()
@@ -110,6 +102,21 @@ function AreaDetector:_SetupCharacterTracking()
 		self.connections,
 		localPlayer.CharacterRemoving:Connect(function()
 			self:_OnCharacterRemoving()
+		end)
+	)
+end
+
+function AreaDetector:_StartHeartbeat()
+	-- Connect to the step event
+	table.insert(
+		self.connections,
+		RunService.Heartbeat:Connect(function(deltaTime: number)
+			timeToUpdate -= deltaTime
+
+			if timeToUpdate <= 0 then
+				timeToUpdate = TIME_TO_UPDATE_MAX
+				self:_OnHeartbeat()
+			end
 		end)
 	)
 end
