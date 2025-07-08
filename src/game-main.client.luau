@@ -61,7 +61,7 @@ printDebug("🎯 Lifetime System initialized successfully!")
 --// Commander //--
 --------------------------------------------------------------------------------
 if AdminsList.IsAdmin(Players.LocalPlayer.UserId) then
-	local Cmdr = require(ReplicatedStorage:WaitForChild("CmdrClient"))
+	local Cmdr = (require)(ReplicatedStorage:WaitForChild("CmdrClient"))
 
 	Cmdr:SetActivationKeys({ Enum.KeyCode.F2 })
 end
