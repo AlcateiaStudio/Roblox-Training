@@ -49,7 +49,7 @@ end
 function ForceApplier:Stop() end
 
 function ForceApplier:SetUpAreaDetectorEvents()
-	self.areaDetector.Signals.Entered:Connect(function(player: Player)
+	self.areaDetector.Signals.Stay:Connect(function(player: Player)
 		self:OnPlayerTrigger(player)
 	end)
 end

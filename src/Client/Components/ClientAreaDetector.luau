@@ -64,6 +64,7 @@ function AreaDetector:Start()
 	self.Signals = {
 		Entered = Signal.new(),
 		Left = Signal.new(),
+		Stay = Signal.new(),
 	}
 
 	self.Callbacks = {}
@@ -195,6 +196,10 @@ function AreaDetector:_OnHeartbeat()
 	elseif not isCurrentlyInArea and self.isPlayerInArea then
 		self.isPlayerInArea = false
 		self.Signals.Left:Fire(localPlayer)
+	end
+
+	if isCurrentlyInArea and self.isPlayerInArea then
+		self.Signals.Stay:Fire(localPlayer)
 	end
 end
 
