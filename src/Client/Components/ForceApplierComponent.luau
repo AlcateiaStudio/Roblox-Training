@@ -5,7 +5,7 @@ local Component = require(ReplicatedStorage.Packages.Component)
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-local AreaDetectorComponent = require(ReplicatedStorage.Shared.Components.AreaDetectorComponent)
+local AreaDetectorComponent = require(ReplicatedStorage.Client.Components.ClientAreaDetector)
 local ForceApplier = Component.new({ Tag = "ForceApplier", Extensions = {} })
 
 local TweenService = game:GetService("TweenService")
@@ -16,7 +16,7 @@ local collisionBodyPartsNames = { "UpperTorso", "Head", "LeftHand", "RightHand",
 local animationDuration = 0.5
 local timeToGoBack = 1
 
-local function OnCharacterAdded_GetNecessaryPartsToTrack(_: Player, character: Model)
+local function OnCharacterAdded_GetNecessaryPartsToTrack(character: Model)
 	local partsToTrack: { BasePart } = {}
 
 	for _, v in pairs(collisionBodyPartsNames) do
@@ -34,9 +34,9 @@ end
 
 function ForceApplier:Start()
 	AreaDetectorComponent:WaitForInstance(self.Instance, timeOut)
-		:andThen(function(component)
+		:andThen(function(component: AreaDetectorComponent.AreaDetector)
 			self.areaDetector = component
-			self.areaDetector:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
+			component:RegisterOnCharacterAdded(OnCharacterAdded_GetNecessaryPartsToTrack)
 
 			self:SetupAnimationVariables()
 			self:SetUpAreaDetectorEvents()
