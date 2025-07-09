@@ -45,7 +45,7 @@ end
 local function MoveForceApplierToPosition(forceApplier: Model, _position: Vector3, _time: number)
 	local collision = forceApplier:FindFirstChild("Collision") :: BasePart
 	local tweenInfo = TweenInfo.new(_time)
-	local endValues = { CFrame = CFrame.new(_position) }
+	local endValues = { CFrame = CFrame.new(_position) * collision.CFrame.Rotation }
 
 	local tween = TweenService:Create(collision, tweenInfo, endValues)
 
@@ -65,7 +65,7 @@ local function MakeForceApplierApplyForce(forceApplier: Model, forceApplierInfo)
 
 	MoveForceApplierToPosition(forceApplier, forceApplierInfo.positionBase, animationDuration)
 
-	wait(animationDuration)
+	wait(animationDuration + timeToGoBack)
 
 	forceApplierInfo.applyingForce = false
 end
