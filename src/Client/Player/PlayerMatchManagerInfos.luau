@@ -1,7 +1,7 @@
 PlayerMatchManagerInfos = {}
 local ClientScriptService = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Net = require(ClientScriptService.Client.Net)
 local COIN_TAG = "Coin"
@@ -9,6 +9,12 @@ local CHECKPOINT_TAG = "Checkpoint"
 local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+
+local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
+
+local timeToTPMax = 1.5
+local timeToTP = 0
+local Teleporting = false
 
 function PlayerMatchManagerInfos:Start()
 	local function CanInteract()
@@ -42,6 +48,25 @@ function PlayerMatchManagerInfos:Start()
 			end
 		end
 	end
+
+	RunService.Heartbeat:Connect(_OnHeartbeat)
+end
+
+function _OnHeartbeat(deltaTime)
+	HandleTeleporting(deltaTime)
+end
+
+function HandleTeleporting(deltaTime: number)
+	if Teleporting == false then
+		return
+	end
+
+	timeToTP += deltaTime
+	if timeToTP < timeToTPMax then
+		return
+	end
+	timeToTP = 0
+	Teleporting = false
 end
 
 function OnRaceStarted()
@@ -53,8 +78,17 @@ function OnRaceFinished()
 end
 
 function PlayerMatchManagerInfos:TeleportPlayer(Player: Model, Position: Vector3)
-	local newCFrame = CFrame.new(Position + Vector3.new(0, 2, 0))
-	Player:PivotTo(newCFrame)
+	Teleporting = true
+	PlayerController:SetPlayerState(2)
+
+	task.spawn(function()
+		while Teleporting == true do
+			task.wait()
+		end
+		PlayerController:SetPlayerState(0)
+		local newCFrame = CFrame.new(Position + Vector3.new(0, 2, 0))
+		Player:PivotTo(newCFrame)
+	end)
 end
 
 PlayerMatchManagerInfos:Start()
