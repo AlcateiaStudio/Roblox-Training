@@ -8,7 +8,7 @@ local ServerNet = require(ServerScriptService.Server.Net)
 local COIN_TAG = "Coin"
 local inactiveCoins = {}
 local CoinCollections = {}
-local taggedModels = CollectionService:GetTagged(COIN_TAG) :: { Model }
+local taggedCoinModels = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local offsetValue = Vector3.new(0, 1000, 0)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
@@ -18,13 +18,13 @@ local function CreateUID()
 end
 
 function MatchManagerInfo:Start()
-	for _, coin in ipairs(taggedModels) do
+	for _, coin in ipairs(taggedCoinModels) do
 		local uid = CreateUID()
 		coin:SetAttribute("UID", uid)
 		table.insert(CoinCollections, coin:GetPivot())
 	end
 
-	local function localFunction(...)
+	local function localPlayerCollideWithCoins(...)
 		self:PlayerCollidedWithCoin(...)
 	end
 
@@ -37,7 +37,7 @@ function MatchManagerInfo:Start()
 		self:ToogleCoins(true)
 	end
 
-	ServerNet.SendCoinsOnPlayerEntered.On(localFunction)
+	ServerNet.SendCoinsOnPlayerEntered.On(localPlayerCollideWithCoins)
 	MatchManagerModule.OnPlayersTeleportedToStartRace:Connect(ActiveCoins)
 	MatchManagerModule.OnLastPlayerCrossedFinishLine:Connect(DeactiveCoins)
 
@@ -45,7 +45,7 @@ function MatchManagerInfo:Start()
 end
 
 function MatchManagerInfo:ToogleCoins(active: boolean)
-	for index, _ in ipairs(taggedModels) do
+	for index, _ in ipairs(taggedCoinModels) do
 		self:MoveCoin(index, active)
 	end
 end
@@ -66,7 +66,7 @@ function MatchManagerInfo:CoinCollectedEvent(index: number)
 end
 
 function MatchManagerInfo:MoveCoin(index: number, disapear: boolean)
-	local model = taggedModels[index]
+	local model = taggedCoinModels[index]
 	local pos = CoinCollections[index]
 	if disapear == true then
 		model:PivotTo(pos + offsetValue)
