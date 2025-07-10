@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local Net = require(ClientScriptService.Client.Net)
 local COIN_TAG = "Coin"
 local CHECKPOINT_TAG = "Checkpoint"
+
 local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
@@ -65,15 +66,30 @@ function PlayerMatchManagerInfos:Start()
 
 	for _, checkPointArea: Model in ipairs(CheckpointtaggedParts) do
 		for __, checkPoint: Instance in ipairs(checkPointArea:GetChildren()) do
-			for ___, areaDetector in ipairs(checkPoint:GetChildren()) do
-				local basePart = areaDetector :: BasePart
-				local checkpointBasePart = checkPoint :: BasePart
-				basePart.Touched:Connect(function(hit)
+			local temp = checkPoint:GetAttribute("CheckpointID")
+			local checkpointBasePart: BasePart
+			if checkPoint:IsA("BasePart") then
+				checkpointBasePart = checkPoint :: BasePart
+				print(` {checkpointBasePart}`)
+
+				checkpointBasePart.Touched:Connect(function(hit)
 					if CanInteract() == false then
 						return
 					end
-					PlayerMatchManagerInfos:TeleportPlayer(hit.Parent, checkpointBasePart.Position)
+					print(`Encostei no checkpoint {temp}`)
 				end)
+			end
+
+			for ___, areaDetector in ipairs(checkPoint:GetChildren()) do
+				if areaDetector:IsA("BasePart") then
+					local basePart = areaDetector :: BasePart
+					basePart.Touched:Connect(function(hit)
+						if CanInteract() == false then
+							return
+						end
+						PlayerMatchManagerInfos:TeleportPlayer(hit.Parent, checkpointBasePart.Position)
+					end)
+				end
 			end
 		end
 	end

@@ -1,25 +1,29 @@
 MatchManagerInfo = {}
-local UID = 0
+local CoinID = 0
 local CollectionService = game:GetService("CollectionService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local ServerNet = require(ServerScriptService.Server.Net)
 
 local COIN_TAG = "Coin"
+local CHECKPOINTPAD_TAG = "CheckpointPad"
+
 local inactiveCoins = {}
 local CoinCollections = {}
 local taggedCoinModels = CollectionService:GetTagged(COIN_TAG) :: { Model }
+local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINTPAD_TAG) :: { Model }
+
 local offsetValue = Vector3.new(0, 1000, 0)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
 
-local function CreateUID()
-	UID += 1
-	return UID
+local function CreateIDCoin()
+	CoinID += 1
+	return CoinID
 end
 
 function MatchManagerInfo:Start()
 	for _, coin in ipairs(taggedCoinModels) do
-		local uid = CreateUID()
+		local uid = CreateIDCoin()
 		coin:SetAttribute("UID", uid)
 		table.insert(CoinCollections, coin:GetPivot())
 	end
