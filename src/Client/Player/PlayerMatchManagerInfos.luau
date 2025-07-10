@@ -21,8 +21,37 @@ function PlayerMatchManagerInfos:Start()
 		return CanInteractWithRace
 	end
 
+	local function AssignTouchedConnection(instance: Instance, ListTabble: { Model })
+		table.insert(ListTabble, instance :: Model)
+	end
+
+	local function RemoveTouchedConnection(instance: Instance, ListTabble: { Model })
+		local model = instance :: Model
+		for index, coin in ipairs(ListTabble) do
+			if coin == model then
+				table.remove(ListTabble, index)
+			end
+		end
+	end
+
 	Net.RaceStarted.On(OnRaceStarted)
 	Net.RaceFinished.On(OnRaceFinished)
+
+	CollectionService:GetInstanceAddedSignal(COIN_TAG):Connect(function(instance: Instance)
+		AssignTouchedConnection(instance, CointaggedParts)
+	end)
+
+	CollectionService:GetInstanceAddedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
+		AssignTouchedConnection(instance, CheckpointtaggedParts)
+	end)
+
+	CollectionService:GetInstanceRemovedSignal(COIN_TAG):Connect(function(instance: Instance)
+		RemoveTouchedConnection(instance, CointaggedParts)
+	end)
+
+	CollectionService:GetInstanceRemovedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
+		RemoveTouchedConnection(instance, CheckpointtaggedParts)
+	end)
 
 	for _, coin in ipairs(CointaggedParts) do
 		coin.PrimaryPart.Touched:Connect(function(hit)
