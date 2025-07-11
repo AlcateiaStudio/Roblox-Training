@@ -6,11 +6,13 @@ MatchManagerModule.ManagerStatus = {
 	WaitingForPodium = 3,
 }
 
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
 local ExplorerUtils = require(ReplicatedStorage.Shared.Utils.ExplorerUtils)
+local MatchManagerRunController = require(ServerScriptService.Server.Services.MatchManagerRunController)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local Max_Player_To_Run = 4
@@ -18,11 +20,13 @@ local Time_Max_To_Await_To_Star_Race = 3
 local Time_To_Stay_On_Podium = 5
 local Time_Max_To_Await_To_TP = 3
 local MinimunPlayersToStart = 1
+local MaxLaps = 3
 
 local listaDePlayers = {}
 local listaDeCharacters = {}
 local TransformsToStarRace = {}
 local TransformsToPodium = {}
+local maxIndex = -1
 
 local CurrentTimeToTP = 0
 local CurrentTimeToStarRace = 0
@@ -30,7 +34,6 @@ local currentTimeOnPodium = 0
 local QuantityPlayersCrossedFinishLine = 0
 
 local VectorToOffsetPad = Vector3.new(0, 3, 0)
-
 MatchManagerModule.OnPlayersTeleportedToStartRace = Signal.new()
 MatchManagerModule.OnStartedRace = Signal.new()
 MatchManagerModule.OnPlayerCrossedFinishLine = Signal.new()
@@ -43,6 +46,19 @@ function MatchManagerModule:Start()
 	ExplorerUtils:GetChildsFromName(TransformsToStarRace, "StartRacePositionModel")
 	ExplorerUtils:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
 	self.ResteAllVariables()
+
+	local CHECKPOINT_TAG = "Checkpoint"
+	local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+
+	maxIndex = -1
+	for _, checkPointArea: Model in ipairs(CheckpointtaggedParts) do
+		for __, checkPoint: Instance in ipairs(checkPointArea:GetChildren()) do
+			local index = checkPoint:GetAttribute("CheckpointID")
+			if index > maxIndex then
+				maxIndex = index
+			end
+		end
+	end
 end
 
 function MatchManagerModule:AdjustPostionFromObjectsToList(charactersInArea, TransformsToStarRace, offset)
@@ -60,7 +76,6 @@ end
 function MatchManagerModule:ResteAllVariables()
 	listaDePlayers = {}
 	listaDeCharacters = {}
-	QuantityPlayersCrossedFinishLine = 0
 	CurrentTimeToTP = 0
 	CurrentTimeToStarRace = 0
 	currentTimeOnPodium = 0
@@ -72,6 +87,10 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 	if CurrentTimeToTP >= Time_Max_To_Await_To_TP then
 		listaDePlayers = table.clone(playersInArea)
 		listaDeCharacters = table.clone(charactersInArea)
+
+		for _, player in pairs(listaDePlayers) do
+			MatchManagerRunController:OnPlayerEnter(player)
+		end
 
 		self.CurrentManagerStatus = self.ManagerStatus.WaitingToStarRace
 		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace, VectorToOffsetPad)
@@ -100,16 +119,32 @@ function MatchManagerModule:StartRaceRoutine(deltaTime)
 end
 
 function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorComponent.AreaDetector)
-	if #AreaDetectorFinishRace.playersInArea >= 1 then
-		QuantityPlayersCrossedFinishLine += 1
+	for index, player: Player in ipairs(AreaDetectorFinishRace.playersInArea) do
+		local playerTable = MatchManagerRunController:GetPlayerTable(player)
 
-		if #listaDePlayers == QuantityPlayersCrossedFinishLine then
-			self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[1], listaDePlayers)
-			self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
-			task.wait()
-			self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
+		if player ~= playerTable.player then
+			continue
+		end
+
+		if playerTable.lap + 1 >= MaxLaps then
+			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index])
+			QuantityPlayersCrossedFinishLine += 1
+
+			if #listaDePlayers == QuantityPlayersCrossedFinishLine then
+				self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index], listaDePlayers)
+				self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
+				task.wait()
+				self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
+
+				MatchManagerRunController:CleanAllPlayers()
+			end
 		else
-			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[1])
+			if playerTable.checkpoint ~= maxIndex then
+				continue
+			end
+			playerTable.lap += 1
+			playerTable.checkpoint = 0
+			print(`Player :{playerTable.player} Checkpoint :{playerTable.checkpoint}, Lap :{playerTable.lap}`)
 		end
 	end
 end

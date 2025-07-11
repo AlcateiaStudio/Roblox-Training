@@ -237,6 +237,13 @@ local function WriteEVENT_PlayerCollidedWithForceApplier(Value: number): ()
 	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
 end
 
+local function WriteEVENT_PlayerReacheadNewCheckpoint(Value: number): ()
+	-- Allocate BLOCK: 5 bytes
+	local BLOCK_START = Allocate(5)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 7)
+	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -262,6 +269,9 @@ if not RunService:IsRunning() then
 		Fire = NOOP
 	},
 	PlayerCollidedWithForceApplier = {
+		Fire = NOOP
+	},
+	PlayerReacheadNewCheckpoint = {
 		Fire = NOOP
 	},
 	})
@@ -460,6 +470,11 @@ local Returns = table.freeze({
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			Unreliable:FireServer(Buffer, SendInstances)
 			Load(Previous)
+		end
+	},
+	PlayerReacheadNewCheckpoint = {
+		Fire = function(Value: number): ()
+			WriteEVENT_PlayerReacheadNewCheckpoint(Value)
 		end
 	},
 })

@@ -55,3 +55,10 @@ event PlayerCollidedWithForceApplier {
     call: SingleSync,
     data: u32
 }
+
+event PlayerReacheadNewCheckpoint {
+    from: Client,
+    type: Reliable,
+    call: SingleSync,
+    data: u32
+}

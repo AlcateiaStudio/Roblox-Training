@@ -4,6 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
 local MatchManagerInfosModule = require(ServerScriptService.Server.Services.MatchManagerInfo)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
+local MatchManagerRunController = require(ServerScriptService.Server.Services.MatchManagerRunController)
 
 local Net = require(ServerScriptService.Server.Net)
 
@@ -62,6 +63,7 @@ local function OnStart()
 
 	MatchManagerModule:Start()
 	MatchManagerInfosModule:Start()
+	MatchManagerRunController:Start()
 	MatchManagerModule.OnPlayersTeleportedToStartRace:Connect(OnCharactersOnPositionToStartRace)
 	MatchManagerModule.OnStartedRace:Connect(OnStartRace)
 	MatchManagerModule.OnPlayerCrossedFinishLine:Connect(OnPlayerCrossedFinishLinde)

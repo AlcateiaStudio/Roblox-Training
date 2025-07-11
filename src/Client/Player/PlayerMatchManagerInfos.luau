@@ -4,6 +4,7 @@ local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 
 local Net = require(ClientScriptService.Client.Net)
+local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
 local COIN_TAG = "Coin"
 local CHECKPOINT_TAG = "Checkpoint"
 
@@ -11,11 +12,10 @@ local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
 
-local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
-
 local timeToTPMax = 1.5
 local timeToTP = 0
 local Teleporting = false
+local CurrentCheckpointRunIndex = 0
 
 function PlayerMatchManagerInfos:Start()
 	local function CanInteract()
@@ -94,14 +94,31 @@ function PlayerMatchManagerInfos:Start()
 		end
 	end
 
-	RunService.Heartbeat:Connect(_OnHeartbeat)
+	local function OnHeartBeat(...)
+		self:_OnHeartbeat(...)
+	end
+
+	RunService.Heartbeat:Connect(OnHeartBeat)
 end
 
-function _OnHeartbeat(deltaTime)
-	HandleTeleporting(deltaTime)
+function PlayerMatchManagerInfos:TouchedCheckpoint(index: number)
+	if CurrentCheckpointRunIndex == index then
+		return
+	end
+
+	if CurrentCheckpointRunIndex + 1 ~= index then
+		return
+	end
+
+	CurrentCheckpointRunIndex = index
+	Net.PlayerReacheadNewCheckpoint.Fire(CurrentCheckpointRunIndex)
 end
 
-function HandleTeleporting(deltaTime: number)
+function PlayerMatchManagerInfos:_OnHeartbeat(deltaTime)
+	self:HandleTeleporting(deltaTime)
+end
+
+function PlayerMatchManagerInfos:HandleTeleporting(deltaTime: number)
 	if Teleporting == false then
 		return
 	end
@@ -125,6 +142,20 @@ end
 function PlayerMatchManagerInfos:TeleportPlayer(Player: Model, Position: Vector3)
 	Teleporting = true
 	PlayerController:SetPlayerState(2)
+
+	local Position: Vector3
+	for _, checkPointArea: Model in ipairs(CheckpointtaggedParts) do
+		for __, checkPoint: Instance in ipairs(checkPointArea:GetChildren()) do
+			local index = checkPoint:GetAttribute("CheckpointID")
+
+			if index ~= CurrentCheckpointRunIndex then
+				continue
+			end
+			local checkpointPad = checkPoint :: BasePart
+			Position = checkpointPad.Position
+			break
+		end
+	end
 
 	task.spawn(function()
 		while Teleporting == true do
