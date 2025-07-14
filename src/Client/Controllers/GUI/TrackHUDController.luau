@@ -11,6 +11,7 @@ export type Hud = {
 	Speed: TextLabel,
 	Timer: TimerTexts,
 	TrackImage: ImageLabel,
+	Laps: LapsTexts,
 }
 
 export type TimerTexts = {
@@ -22,6 +23,11 @@ export type TimerTexts = {
 export type PlacementTexts = {
 	Placement: TextLabel,
 	Ending: TextLabel,
+}
+
+export type LapsTexts = {
+	CurrentLap: TextLabel,
+	TotalLaps: TextLabel,
 }
 
 local hud: Hud = nil
@@ -43,6 +49,7 @@ function TrackHUDController:GetUI()
 		Speed = nil,
 		Timer = nil,
 		TrackImage = nil,
+		Laps = nil,
 	}
 
 	local playerGui = localPlayer:WaitForChild("PlayerGui")
@@ -65,6 +72,14 @@ function TrackHUDController:GetUI()
 	hud.Placement = {
 		Placement = placementText.Value :: TextLabel,
 		Ending = placementEndingText.Value :: TextLabel,
+	}
+
+	local currentLapText = configuration:WaitForChild("CurrentLapText") :: ObjectValue
+	local totalLapsText = configuration:WaitForChild("TotalLapsText") :: ObjectValue
+
+	hud.Laps = {
+		CurrentLap = currentLapText.Value :: TextLabel,
+		TotalLaps = totalLapsText.Value :: TextLabel,
 	}
 
 	-- Validation
@@ -93,6 +108,14 @@ function TrackHUDController:GetPlacementTexts(): PlacementTexts
 	end
 
 	return hud.Placement
+end
+
+function TrackHUDController:GetLapsTexts(): LapsTexts
+	if not hud then
+		self:GetUI()
+	end
+
+	return hud.Laps
 end
 
 return LifetimeObject.extend(TrackHUDController, "TrackHUDController")

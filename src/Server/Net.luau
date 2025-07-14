@@ -269,6 +269,12 @@ local function WriteEVENT_PlayerReachedFinishLine(Value: nil): ()
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 10)
 end
 
+local function WriteEVENT_LapChanged(Value: nil): ()
+	-- Allocate BLOCK: 1 bytes
+	local BLOCK_START = Allocate(1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 11)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -327,6 +333,12 @@ if not RunService:IsRunning() then
 		On = NOOP
 	},
 	PlayerReachedFinishLine = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
+	},
+	LapChanged = {
 		Fire = NOOP,
 		FireAll = NOOP,
 		FireList = NOOP,
@@ -862,6 +874,52 @@ local Returns = table.freeze({
 		FireExcept = function(Except: Player, Value: nil): ()
 			Load()
 			WriteEVENT_PlayerReachedFinishLine(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
+	LapChanged = {
+		Fire = function(Player: Player, Value: nil): ()
+			Load(PlayersMap[Player])
+			WriteEVENT_LapChanged(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: nil): ()
+			Load()
+			WriteEVENT_LapChanged(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: nil): ()
+			Load()
+			WriteEVENT_LapChanged(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: nil): ()
+			Load()
+			WriteEVENT_LapChanged(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
 			for _, Player in Players:GetPlayers() do
 				if Player == Except then

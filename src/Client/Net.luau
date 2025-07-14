@@ -165,6 +165,8 @@ Events.Reliable[7] = {}
 Queue.Reliable[7] = table.create(256)
 Events.Reliable[10] = {}
 Queue.Reliable[10] = table.create(256)
+Events.Reliable[11] = {}
+Queue.Reliable[11] = table.create(256)
 local function ReadEVENT_RaceCountdownStarted(): (nil)
 	return nil
 end
@@ -269,6 +271,10 @@ local function ReadEVENT_PlayerReachedFinishLine(): (nil)
 	return nil
 end
 
+local function ReadEVENT_LapChanged(): (nil)
+	return nil
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -306,6 +312,9 @@ if not RunService:IsRunning() then
 		Fire = NOOP
 	},
 	PlayerReachedFinishLine = {
+		On = NOOP
+	},
+	LapChanged = {
 		On = NOOP
 	},
 	})
@@ -438,6 +447,18 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 					warn("[Blink]: Event queue of \"PlayerReachedFinishLine\" exceeded 256, did you forget to implement a listener?")
 				end
 				table.insert(Queue.Reliable[10], {Value} :: {any})
+			end
+		elseif Index == 11 then
+			local Value: nil = ReadEVENT_LapChanged()
+			if #Events.Reliable[11] > 0 then
+				for _, Listener in Events.Reliable[11] do
+					Listener(Value)
+				end
+			else
+				if #Queue.Reliable[11] > 256 then
+					warn("[Blink]: Event queue of \"LapChanged\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[11], {Value} :: {any})
 			end
 		end
 	end
@@ -600,6 +621,21 @@ local Returns = table.freeze({
 				local Index = table.find(Events.Reliable[10], Listener)
 				if Index ~= nil then
 					table.remove(Events.Reliable[10], Index)
+				end
+			end
+		end
+	},
+	LapChanged = {
+		On = function(Listener: (Value: nil) -> ()): () -> ()
+			table.insert(Events.Reliable[11], Listener)
+			for Index, Arguments in Queue.Reliable[11] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[11] = {}
+			return function (): ()
+				local Index = table.find(Events.Reliable[11], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[11], Index)
 				end
 			end
 		end

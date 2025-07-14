@@ -76,7 +76,13 @@ event PlayerReacheadNewCheckpoint {
     data: u32
 }
 
-event PlayerReachedFinishLine{
+event PlayerReachedFinishLine {
+    from: Server,
+    type: Reliable,
+    call: ManySync,
+}
+
+event LapChanged {
     from: Server,
     type: Reliable,
     call: ManySync,

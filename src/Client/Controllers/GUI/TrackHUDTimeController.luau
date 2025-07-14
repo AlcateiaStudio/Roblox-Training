@@ -3,8 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local TrackHUDController = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUDController)
 
-local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 local Net = require(ReplicatedStorage.Client.Net)
+local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 
 local TrackHUDTimeController = {}
 
@@ -29,4 +29,4 @@ function TrackHUDTimeController:OnRaceStarted()
 	self.trackClock:StartTimer(0)
 end
 
-return LifetimeObject.extend(TrackHUDTimeController, "TrackHUDTimeUIController")
+return LifetimeObject.extend(TrackHUDTimeController, "TrackHUDTimeController")

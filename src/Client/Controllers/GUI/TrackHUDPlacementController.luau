@@ -23,4 +23,4 @@ function TrackHUDPlacementController:OnStart()
 	Net.PlayerPlacementChanged.On(OnPlacementChanged)
 end
 
-return LifetimeObject.extend(TrackHUDPlacementController, "TrackHUDTimeUIController")
+return LifetimeObject.extend(TrackHUDPlacementController, "TrackHUDPlacementController")
