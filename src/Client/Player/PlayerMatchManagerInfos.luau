@@ -6,14 +6,15 @@ local RunService = game:GetService("RunService")
 
 local Net = require(ClientScriptService.Client.Net)
 local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
+
 local COIN_TAG = "Coin"
 local CHECKPOINT_TAG = "Checkpoint"
 local CHECKPOINT_RESPAW_TAG = "RespawnArea"
 
 local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
-local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
-local CheckpointRespawntaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { Model }
+local CheckpointTaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+local CheckpointRespawnTaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { Model }
 
 local timeToTPMax = 1.5
 local timeToTP = 0
@@ -51,7 +52,7 @@ function PlayerMatchManagerInfos:Start()
 	end)
 
 	CollectionService:GetInstanceAddedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
-		AssignTouchedConnection(instance, CheckpointtaggedParts)
+		AssignTouchedConnection(instance, CheckpointTaggedParts)
 	end)
 
 	CollectionService:GetInstanceRemovedSignal(COIN_TAG):Connect(function(instance: Instance)
@@ -59,7 +60,7 @@ function PlayerMatchManagerInfos:Start()
 	end)
 
 	CollectionService:GetInstanceRemovedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
-		RemoveTouchedConnection(instance, CheckpointtaggedParts)
+		RemoveTouchedConnection(instance, CheckpointTaggedParts)
 	end)
 
 	for _, coin in ipairs(CointaggedParts) do
@@ -72,7 +73,7 @@ function PlayerMatchManagerInfos:Start()
 		end)
 	end
 
-	for _, checkPoint: Model in ipairs(CheckpointtaggedParts) do
+	for _, checkPoint: Model in ipairs(CheckpointTaggedParts) do
 		local temp = checkPoint:GetAttribute("CheckpointID")
 		local checkpointBasePart: BasePart
 		if checkPoint:IsA("BasePart") then
@@ -85,18 +86,25 @@ function PlayerMatchManagerInfos:Start()
 				end
 				PlayerMatchManagerInfos:TouchedCheckpoint(temp)
 			end)
+
+			local respawnPosition = checkpointBasePart:FindFirstChild("RespawnPosition") :: BasePart
+
+			checkpointBasePart.Transparency = 1
+			respawnPosition.Transparency = 1
 		end
 	end
 
-	for _, areaDetector in ipairs(CheckpointRespawntaggedParts) do
-		if areaDetector:IsA("BasePart") then
-			local basePart = areaDetector :: BasePart
+	for _, respawnZone in ipairs(CheckpointRespawnTaggedParts) do
+		if respawnZone:IsA("BasePart") then
+			local basePart = respawnZone :: BasePart
 			basePart.Touched:Connect(function(hit)
 				if CanInteract() == false then
 					return
 				end
 				PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(hit.Parent)
 			end)
+
+			basePart.Transparency = 1
 		end
 	end
 
@@ -158,13 +166,16 @@ function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
 	PlayerController:SetPlayerState(2)
 
 	local Position: Vector3
-	for _, checkPoint: BasePart in ipairs(CheckpointtaggedParts) do
+	for _, checkPoint: BasePart in ipairs(CheckpointTaggedParts) do
 		local index = checkPoint:GetAttribute("CheckpointID")
 
 		if index ~= CurrentCheckpointRunIndex then
 			continue
 		end
-		Position = checkPoint.Position
+
+		local respawnPosition = checkPoint:FindFirstChild("RespawnPosition") :: BasePart
+
+		Position = respawnPosition.Position
 		break
 	end
 
