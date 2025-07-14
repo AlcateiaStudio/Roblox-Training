@@ -10,9 +10,9 @@ local ClientFolder = ReplicatedStorage.Client
 local debug = false
 
 -- Imports
+local AdminsList = require(ReplicatedStorage.Shared.Admins.AdminsList)
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Replica = require(ReplicatedStorage.Client.ReplicaClient)
-local AdminsList = require(ReplicatedStorage.Shared.Admins.AdminsList)
 
 local function printDebug(...)
 	if debug then
@@ -64,4 +64,5 @@ if AdminsList.IsAdmin(Players.LocalPlayer.UserId) then
 	local Cmdr = (require)(ReplicatedStorage:WaitForChild("CmdrClient"))
 
 	Cmdr:SetActivationKeys({ Enum.KeyCode.F2 })
+	printDebug("Cmdr initialized successfully!")
 end

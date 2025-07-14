@@ -6,17 +6,17 @@ local TrackHUDController = require(ReplicatedStorage.Client.Controllers.GUI.Trac
 local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 local Net = require(ReplicatedStorage.Client.Net)
 
-local TrackHUDTimeUIController = {}
+local TrackHUDTimeController = {}
 
-function TrackHUDTimeUIController:OnStart()
+function TrackHUDTimeController:OnStart()
 	print("ONSTART CHAMADO")
 
 	Net.RaceStarted.On(function()
-		TrackHUDTimeUIController:OnRaceStarted()
+		TrackHUDTimeController:OnRaceStarted()
 	end)
 end
 
-function TrackHUDTimeUIController:OnRaceStarted()
+function TrackHUDTimeController:OnRaceStarted()
 	local timerTexts = TrackHUDController:GetTimeTexts()
 
 	local function onTimerChange(timer: number)
@@ -29,4 +29,4 @@ function TrackHUDTimeUIController:OnRaceStarted()
 	self.trackClock:StartTimer(0)
 end
 
-return LifetimeObject.extend(TrackHUDTimeUIController, "TrackHUDTimeUIController")
+return LifetimeObject.extend(TrackHUDTimeController, "TrackHUDTimeUIController")

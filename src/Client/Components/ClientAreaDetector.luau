@@ -54,7 +54,7 @@ function AreaDetector:Start()
 		return
 	end
 
-	print("Starting for AreaDetector", self.Instance)
+	-- print("Starting for AreaDetector", self.Instance)
 
 	assert(self.Instance:IsA("Model"), "AreaDetector must be a model.")
 

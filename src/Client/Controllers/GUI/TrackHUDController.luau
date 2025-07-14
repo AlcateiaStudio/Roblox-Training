@@ -8,7 +8,7 @@ local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 export type Hud = {
 	ScreenGui: ScreenGui,
 	Coins: TextLabel,
-	Placement: TextLabel,
+	Placement: PlacementTexts,
 	Speed: TextLabel,
 	Timer: TimerTexts,
 	TrackImage: ImageLabel,
@@ -18,6 +18,11 @@ export type TimerTexts = {
 	Minutes: TextLabel,
 	Seconds: TextLabel,
 	Milliseconds: TextLabel,
+}
+
+export type PlacementTexts = {
+	Placement: TextLabel,
+	Ending: TextLabel,
 }
 
 local hud: Hud = nil
@@ -61,6 +66,13 @@ function TrackHUDController:GetUI()
 	local trackImage = configuration:WaitForChild("TrackImage") :: ObjectValue
 	hud.TrackImage = trackImage.Value :: ImageLabel
 
+	local placementText = configuration:WaitForChild("PlacementNumberText") :: ObjectValue
+	local placementEndingText = configuration:WaitForChild("PlacementEndingSymbolText") :: ObjectValue
+	hud.Placement = {
+		Placement = placementText.Value :: TextLabel,
+		Ending = placementEndingText.Value :: TextLabel,
+	}
+
 	-- Validation
 	assert(hud.ScreenGui.ResetOnSpawn == false, "UI should not reset on spawn")
 end
@@ -79,6 +91,14 @@ function TrackHUDController:GetTrackImage(): ImageLabel
 	end
 
 	return hud.TrackImage
+end
+
+function TrackHUDController:GetPlacementTexts(): PlacementTexts
+	if not hud then
+		self:GetUI()
+	end
+
+	return hud.Placement
 end
 
 return LifetimeObject.extend(TrackHUDController, "TrackHUDController")
