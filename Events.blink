@@ -69,3 +69,9 @@ event PlayerReacheadNewCheckpoint {
     call: SingleSync,
     data: u32
 }
+
+event PlayerReachedFinishLine{
+    from: Server,
+    type: Reliable,
+    call: SingleSync,
+}

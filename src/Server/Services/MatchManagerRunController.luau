@@ -22,6 +22,10 @@ function MatchManagerRunController:PlayerReachedCheckpoint(_player: Player, inde
 	end
 end
 
+function MatchManagerRunController:PlayerReachedFinishLine(player: Player)
+	ServerNet.PlayerReachedFinishLine.Fire(player)
+end
+
 function MatchManagerRunController:OnPlayerEnter(_player: Player)
 	local playerTable = { player = _player, checkpoint = 0, lap = 0 }
 	table.insert(PlayerTable, playerTable)

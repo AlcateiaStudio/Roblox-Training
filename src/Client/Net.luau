@@ -156,6 +156,7 @@ Queue.Reliable[2] = table.create(256)
 Queue.Reliable[3] = table.create(256)
 Queue.Reliable[4] = table.create(256)
 Queue.Reliable[6] = table.create(256)
+Queue.Reliable[9] = table.create(256)
 local function ReadEVENT_RaceStarted(): (nil)
 	return nil
 end
@@ -252,6 +253,10 @@ local function WriteEVENT_PlayerReacheadNewCheckpoint(Value: number): ()
 	buffer.writeu32(SendBuffer, BLOCK_START + 1, Value)
 end
 
+local function ReadEVENT_PlayerReachedFinishLine(): (nil)
+	return nil
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -284,6 +289,9 @@ if not RunService:IsRunning() then
 	},
 	PlayerReacheadNewCheckpoint = {
 		Fire = NOOP
+	},
+	PlayerReachedFinishLine = {
+		On = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -381,6 +389,16 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 					warn("[Blink]: Event queue of \"UpdatePlayerState\" exceeded 256, did you forget to implement a listener?")
 				end
 				table.insert(Queue.Reliable[6], {Value} :: {any})
+			end
+		elseif Index == 9 then
+			local Value: nil = ReadEVENT_PlayerReachedFinishLine()
+			if Events.Reliable[9] ~= nil then
+				Events.Reliable[9](Value)
+			else
+				if #Queue.Reliable[9] > 256 then
+					warn("[Blink]: Event queue of \"PlayerReachedFinishLine\" exceeded 256, did you forget to implement a listener?")
+				end
+				table.insert(Queue.Reliable[9], {Value} :: {any})
 			end
 		end
 	end
@@ -510,6 +528,20 @@ local Returns = table.freeze({
 	PlayerReacheadNewCheckpoint = {
 		Fire = function(Value: number): ()
 			WriteEVENT_PlayerReacheadNewCheckpoint(Value)
+		end
+	},
+	PlayerReachedFinishLine = {
+		On = function(Listener: (Value: nil) -> ()): () -> ()
+			Events.Reliable[9] = Listener
+			for Index, Arguments in Queue.Reliable[9] do
+				Listener(table.unpack(Arguments))
+			end
+			Queue.Reliable[9] = {}
+			return function (): ()
+				if Events.Reliable[9] == Listener then
+					Events.Reliable[9] = nil
+				end
+			end
 		end
 	},
 })

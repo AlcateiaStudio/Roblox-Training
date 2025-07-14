@@ -35,8 +35,13 @@ function PlayerMatchManagerInfos:Start()
 		end
 	end
 
+	local function OnPlayerReachedFinishLine()
+		PlayerReachedFinishLine()
+	end
+
 	Net.RaceStarted.On(OnRaceStarted)
 	Net.RaceFinished.On(OnRaceFinished)
+	Net.PlayerReachedFinishLine.On(OnPlayerReachedFinishLine)
 
 	CollectionService:GetInstanceAddedSignal(COIN_TAG):Connect(function(instance: Instance)
 		AssignTouchedConnection(instance, CointaggedParts)
@@ -76,7 +81,7 @@ function PlayerMatchManagerInfos:Start()
 					if CanInteract() == false then
 						return
 					end
-					print(`Encostei no checkpoint {temp}`)
+					PlayerMatchManagerInfos:TouchedCheckpoint(temp)
 				end)
 			end
 
@@ -112,6 +117,10 @@ function PlayerMatchManagerInfos:TouchedCheckpoint(index: number)
 
 	CurrentCheckpointRunIndex = index
 	Net.PlayerReacheadNewCheckpoint.Fire(CurrentCheckpointRunIndex)
+end
+
+function PlayerReachedFinishLine()
+	CurrentCheckpointRunIndex = 0
 end
 
 function PlayerMatchManagerInfos:_OnHeartbeat(deltaTime)

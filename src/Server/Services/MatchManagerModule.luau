@@ -126,7 +126,7 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 			continue
 		end
 
-		if playerTable.lap + 1 >= MaxLaps then
+		if playerTable.lap + 1 > MaxLaps then
 			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index])
 			QuantityPlayersCrossedFinishLine += 1
 
@@ -142,8 +142,14 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 			if playerTable.checkpoint ~= maxIndex then
 				continue
 			end
+
+			if playerTable.checkpoint == 0 then
+				continue
+			end
+
 			playerTable.lap += 1
 			playerTable.checkpoint = 0
+			MatchManagerRunController:PlayerReachedFinishLine(playerTable.player)
 			print(`Player :{playerTable.player} Checkpoint :{playerTable.checkpoint}, Lap :{playerTable.lap}`)
 		end
 	end
