@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
-local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 
 --// Type Definitions //--
 export type Hud = {
@@ -28,7 +27,6 @@ export type PlacementTexts = {
 local hud: Hud = nil
 local localPlayer = Players.LocalPlayer
 
--- Create the controller object first
 local TrackHUDController = {}
 
 function TrackHUDController:OnAwake()
@@ -36,10 +34,6 @@ function TrackHUDController:OnAwake()
 		TrackHUDController:GetUI()
 	end
 end
-
-function TrackHUDController:OnStart() end
-
-function TrackHUDController:OnDestroy() end
 
 function TrackHUDController:GetUI()
 	hud = {

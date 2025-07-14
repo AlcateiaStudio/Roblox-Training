@@ -13,6 +13,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
 local ExplorerUtils = require(ReplicatedStorage.Shared.Utils.ExplorerUtils)
 local MatchManagerRunController = require(ServerScriptService.Server.Services.MatchManagerRunController)
+local Net = require(ServerScriptService.Server.Net)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local Max_Player_To_Run = 4
@@ -103,8 +104,8 @@ end
 function MatchManagerModule:StartRaceRoutine(deltaTime)
 	CurrentTimeToStarRace += deltaTime
 	if CurrentTimeToStarRace < Time_Max_To_Await_To_Star_Race then
-		--TODO CHAMAR HUD
-		print(`Time To Start Running :{CurrentTimeToStarRace}`)
+		Net.RaceCountdownStarted.FireList(listaDePlayers)
+		-- print(`Time To Start Running :{CurrentTimeToStarRace}`)
 		return
 	end
 	--TODO Destravar o player
