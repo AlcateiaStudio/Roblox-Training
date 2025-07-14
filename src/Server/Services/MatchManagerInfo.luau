@@ -1,4 +1,5 @@
 MatchManagerInfo = {}
+
 local CoinID = 0
 local CollectionService = game:GetService("CollectionService")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -6,12 +7,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerNet = require(ServerScriptService.Server.Net)
 
 local COIN_TAG = "Coin"
-local CHECKPOINTPAD_TAG = "CheckpointPad"
 
 local inactiveCoins = {}
 local CoinCollections = {}
 local taggedCoinModels = CollectionService:GetTagged(COIN_TAG) :: { Model }
-local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINTPAD_TAG) :: { Model }
 
 local offsetValue = Vector3.new(0, 1000, 0)
 local MatchManagerModule = require(ServerScriptService.Server.Services.MatchManagerModule)
