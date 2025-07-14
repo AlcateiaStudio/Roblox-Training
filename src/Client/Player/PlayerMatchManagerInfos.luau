@@ -7,10 +7,12 @@ local Net = require(ClientScriptService.Client.Net)
 local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
 local COIN_TAG = "Coin"
 local CHECKPOINT_TAG = "Checkpoint"
+local CHECKPOINT_RESPAW_TAG = "RespawnArea"
 
 local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+local CheckpointRespawntaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { Model }
 
 local timeToTPMax = 1.5
 local timeToTP = 0
@@ -84,18 +86,18 @@ function PlayerMatchManagerInfos:Start()
 					PlayerMatchManagerInfos:TouchedCheckpoint(temp)
 				end)
 			end
+		end
+	end
 
-			for ___, areaDetector in ipairs(checkPoint:GetChildren()) do
-				if areaDetector:IsA("BasePart") then
-					local basePart = areaDetector :: BasePart
-					basePart.Touched:Connect(function(hit)
-						if CanInteract() == false then
-							return
-						end
-						PlayerMatchManagerInfos:TeleportPlayer(hit.Parent, checkpointBasePart.Position)
-					end)
+	for _, areaDetector in ipairs(CheckpointRespawntaggedParts) do
+		if areaDetector:IsA("BasePart") then
+			local basePart = areaDetector :: BasePart
+			basePart.Touched:Connect(function(hit)
+				if CanInteract() == false then
+					return
 				end
-			end
+				PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(hit.Parent)
+			end)
 		end
 	end
 
@@ -148,7 +150,11 @@ function OnRaceFinished()
 	CanInteractWithRace = false
 end
 
-function PlayerMatchManagerInfos:TeleportPlayer(Player: Model, Position: Vector3)
+function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
+	if Teleporting == true then
+		return
+	end
+
 	Teleporting = true
 	PlayerController:SetPlayerState(2)
 
