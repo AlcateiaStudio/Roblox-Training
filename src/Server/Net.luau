@@ -151,9 +151,13 @@ local Queue: any = {
     Unreliable = table.create(256)
 }
 
+Events.Reliable[6] = {}
 Queue.Reliable[6] = table.create(256)
+Events.Reliable[8] = {}
 Queue.Reliable[8] = table.create(256)
+Events.Unreliable[0] = {}
 Queue.Unreliable[0] = table.create(256)
+Events.Reliable[9] = {}
 Queue.Reliable[9] = table.create(256)
 local function WriteEVENT_RaceCountdownStarted(Value: nil): ()
 	-- Allocate BLOCK: 1 bytes
@@ -259,6 +263,12 @@ local function ReadEVENT_PlayerReacheadNewCheckpoint(): (number)
 	return Value
 end
 
+local function WriteEVENT_PlayerReachedFinishLine(Value: nil): ()
+	-- Allocate BLOCK: 1 bytes
+	local BLOCK_START = Allocate(1)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 10)
+end
+
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
@@ -315,6 +325,12 @@ if not RunService:IsRunning() then
 	},
 	PlayerReacheadNewCheckpoint = {
 		On = NOOP
+	},
+	PlayerReachedFinishLine = {
+		Fire = NOOP,
+		FireAll = NOOP,
+		FireList = NOOP,
+		FireExcept = NOOP
 	},
 	})
 	return Returns :: BLINK_EVENTS_SYMBOL
@@ -375,8 +391,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 6 then
 			local Value: number = ReadEVENT_PlayerUpdatedSpeed()
-			if Events.Reliable[6] ~= nil then
-				Events.Reliable[6](Player, Value)
+			if #Events.Reliable[6] > 0 then
+				for _, Listener in Events.Reliable[6] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[6] > 256 then
 					warn("[Blink]: Event queue of \"PlayerUpdatedSpeed\" exceeded 256, did you forget to implement a listener?")
@@ -385,8 +403,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 			end
 		elseif Index == 8 then
 			local Value: number = ReadEVENT_SendCoinsOnPlayerEntered()
-			if Events.Reliable[8] ~= nil then
-				Events.Reliable[8](Player, Value)
+			if #Events.Reliable[8] > 0 then
+				for _, Listener in Events.Reliable[8] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[8] > 256 then
 					warn("[Blink]: Event queue of \"SendCoinsOnPlayerEntered\" exceeded 256, did you forget to implement a listener?")
@@ -395,8 +415,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 			end
 		elseif Index == 9 then
 			local Value: number = ReadEVENT_PlayerReacheadNewCheckpoint()
-			if Events.Reliable[9] ~= nil then
-				Events.Reliable[9](Player, Value)
+			if #Events.Reliable[9] > 0 then
+				for _, Listener in Events.Reliable[9] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[9] > 256 then
 					warn("[Blink]: Event queue of \"PlayerReacheadNewCheckpoint\" exceeded 256, did you forget to implement a listener?")
@@ -418,8 +440,8 @@ Unreliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instan
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
 			local Value: number = ReadEVENT_PlayerCollidedWithForceApplier()
-			if Events.Unreliable[0] ~= nil then
-				Events.Unreliable[0](Player, Value)
+			for _, Listener in Events.Unreliable[0] do
+				Listener(Player, Value)
 			end
 		end
 	end
@@ -707,14 +729,15 @@ local Returns = table.freeze({
 	},
 	PlayerUpdatedSpeed = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[6] = Listener
+			table.insert(Events.Reliable[6], Listener)
 			for Index, Arguments in Queue.Reliable[6] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[6] = {}
 			return function (): ()
-				if Events.Reliable[6] == Listener then
-					Events.Reliable[6] = nil
+				local Index = table.find(Events.Reliable[6], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[6], Index)
 				end
 			end
 		end
@@ -767,41 +790,90 @@ local Returns = table.freeze({
 	},
 	SendCoinsOnPlayerEntered = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[8] = Listener
+			table.insert(Events.Reliable[8], Listener)
 			for Index, Arguments in Queue.Reliable[8] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[8] = {}
 			return function (): ()
-				if Events.Reliable[8] == Listener then
-					Events.Reliable[8] = nil
+				local Index = table.find(Events.Reliable[8], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[8], Index)
 				end
 			end
 		end
 	},
 	PlayerCollidedWithForceApplier = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Unreliable[0] = Listener
+			table.insert(Events.Unreliable[0], Listener)
 			return function (): ()
-				if Events.Unreliable[0] == Listener then
-					Events.Unreliable[0] = nil
+				local Index = table.find(Events.Unreliable[0], Listener)
+				if Index ~= nil then
+					table.remove(Events.Unreliable[0], Index)
 				end
 			end
 		end
 	},
 	PlayerReacheadNewCheckpoint = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[9] = Listener
+			table.insert(Events.Reliable[9], Listener)
 			for Index, Arguments in Queue.Reliable[9] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[9] = {}
 			return function (): ()
-				if Events.Reliable[9] == Listener then
-					Events.Reliable[9] = nil
+				local Index = table.find(Events.Reliable[9], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[9], Index)
 				end
 			end
 		end
+	},
+	PlayerReachedFinishLine = {
+		Fire = function(Player: Player, Value: nil): ()
+			Load(PlayersMap[Player])
+			WriteEVENT_PlayerReachedFinishLine(Value)
+			PlayersMap[Player] = Save()
+		end,
+		FireAll = function(Value: nil): ()
+			Load()
+			WriteEVENT_PlayerReachedFinishLine(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireList = function(List: {Player}, Value: nil): ()
+			Load()
+			WriteEVENT_PlayerReachedFinishLine(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: nil): ()
+			Load()
+			WriteEVENT_PlayerReachedFinishLine(Value)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
 	},
 })
 type BLINK_EVENTS_SYMBOL = typeof(Returns)

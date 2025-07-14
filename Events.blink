@@ -11,67 +11,73 @@ event RaceCountdownStarted {
 event RaceStarted {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
 }
 
 event RaceFinished {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
 }
 
 event PlayerPlacementChanged {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
 }
 
 event PlayerTakeDamage {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: (f16, vector<f64>)
 }
 
 event CollidedWithPlayer {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: (u32, vector<f64>)
 }
 
 event PlayerUpdatedSpeed {
     from: Client,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
 }
 
 event UpdatePlayerState {
     from: Server,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
 }
 
 event SendCoinsOnPlayerEntered {
     from: Client,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
 }
 
 event PlayerCollidedWithForceApplier {
     from: Client,
     type: Unreliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
 }
 
 event PlayerReacheadNewCheckpoint {
     from: Client,
     type: Reliable,
-    call: SingleSync,
+    call: ManySync,
     data: u32
+}
+
+event PlayerReachedFinishLine{
+    from: Server,
+    type: Reliable,
+    call: ManySync,
 }
