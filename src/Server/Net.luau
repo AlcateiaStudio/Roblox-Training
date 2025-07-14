@@ -151,9 +151,13 @@ local Queue: any = {
     Unreliable = table.create(256)
 }
 
+Events.Reliable[5] = {}
 Queue.Reliable[5] = table.create(256)
+Events.Reliable[7] = {}
 Queue.Reliable[7] = table.create(256)
+Events.Unreliable[0] = {}
 Queue.Unreliable[0] = table.create(256)
+Events.Reliable[8] = {}
 Queue.Reliable[8] = table.create(256)
 local function WriteEVENT_RaceStarted(Value: nil): ()
 	-- Allocate BLOCK: 1 bytes
@@ -375,8 +379,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 5 then
 			local Value: number = ReadEVENT_PlayerUpdatedSpeed()
-			if Events.Reliable[5] ~= nil then
-				Events.Reliable[5](Player, Value)
+			if #Events.Reliable[5] > 0 then
+				for _, Listener in Events.Reliable[5] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[5] > 256 then
 					warn("[Blink]: Event queue of \"PlayerUpdatedSpeed\" exceeded 256, did you forget to implement a listener?")
@@ -385,8 +391,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 			end
 		elseif Index == 7 then
 			local Value: number = ReadEVENT_SendCoinsOnPlayerEntered()
-			if Events.Reliable[7] ~= nil then
-				Events.Reliable[7](Player, Value)
+			if #Events.Reliable[7] > 0 then
+				for _, Listener in Events.Reliable[7] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[7] > 256 then
 					warn("[Blink]: Event queue of \"SendCoinsOnPlayerEntered\" exceeded 256, did you forget to implement a listener?")
@@ -395,8 +403,10 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 			end
 		elseif Index == 8 then
 			local Value: number = ReadEVENT_PlayerReacheadNewCheckpoint()
-			if Events.Reliable[8] ~= nil then
-				Events.Reliable[8](Player, Value)
+			if #Events.Reliable[8] > 0 then
+				for _, Listener in Events.Reliable[8] do
+					Listener(Player, Value)
+				end
 			else
 				if #Queue.Reliable[8] > 256 then
 					warn("[Blink]: Event queue of \"PlayerReacheadNewCheckpoint\" exceeded 256, did you forget to implement a listener?")
@@ -418,8 +428,8 @@ Unreliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instan
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
 			local Value: number = ReadEVENT_PlayerCollidedWithForceApplier()
-			if Events.Unreliable[0] ~= nil then
-				Events.Unreliable[0](Player, Value)
+			for _, Listener in Events.Unreliable[0] do
+				Listener(Player, Value)
 			end
 		end
 	end
@@ -661,14 +671,15 @@ local Returns = table.freeze({
 	},
 	PlayerUpdatedSpeed = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[5] = Listener
+			table.insert(Events.Reliable[5], Listener)
 			for Index, Arguments in Queue.Reliable[5] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[5] = {}
 			return function (): ()
-				if Events.Reliable[5] == Listener then
-					Events.Reliable[5] = nil
+				local Index = table.find(Events.Reliable[5], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[5], Index)
 				end
 			end
 		end
@@ -721,38 +732,41 @@ local Returns = table.freeze({
 	},
 	SendCoinsOnPlayerEntered = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[7] = Listener
+			table.insert(Events.Reliable[7], Listener)
 			for Index, Arguments in Queue.Reliable[7] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[7] = {}
 			return function (): ()
-				if Events.Reliable[7] == Listener then
-					Events.Reliable[7] = nil
+				local Index = table.find(Events.Reliable[7], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[7], Index)
 				end
 			end
 		end
 	},
 	PlayerCollidedWithForceApplier = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Unreliable[0] = Listener
+			table.insert(Events.Unreliable[0], Listener)
 			return function (): ()
-				if Events.Unreliable[0] == Listener then
-					Events.Unreliable[0] = nil
+				local Index = table.find(Events.Unreliable[0], Listener)
+				if Index ~= nil then
+					table.remove(Events.Unreliable[0], Index)
 				end
 			end
 		end
 	},
 	PlayerReacheadNewCheckpoint = {
 		On = function(Listener: (Player: Player, Value: number) -> ()): () -> ()
-			Events.Reliable[8] = Listener
+			table.insert(Events.Reliable[8], Listener)
 			for Index, Arguments in Queue.Reliable[8] do
 				Listener(table.unpack(Arguments))
 			end
 			Queue.Reliable[8] = {}
 			return function (): ()
-				if Events.Reliable[8] == Listener then
-					Events.Reliable[8] = nil
+				local Index = table.find(Events.Reliable[8], Listener)
+				if Index ~= nil then
+					table.remove(Events.Reliable[8], Index)
 				end
 			end
 		end
