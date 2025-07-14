@@ -9,8 +9,6 @@ local Timer = require(ReplicatedStorage.Shared.Utils.Timer)
 local TrackHUDTimeController = {}
 
 function TrackHUDTimeController:OnStart()
-	print("ONSTART CHAMADO")
-
 	Net.RaceStarted.On(function()
 		TrackHUDTimeController:OnRaceStarted()
 	end)

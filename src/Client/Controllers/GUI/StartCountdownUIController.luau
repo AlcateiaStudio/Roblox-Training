@@ -69,7 +69,6 @@ end
 
 local function OnCountdownChanged()
 	currentCountdownStep += 1
-	print(`Countdown Step Changed: {currentCountdownStep}`)
 	if currentCountdownStep <= #lights then
 		ToggleLightForStep(currentCountdownStep)
 	else
