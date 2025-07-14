@@ -52,12 +52,10 @@ function MatchManagerModule:Start()
 	local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
 
 	maxIndex = -1
-	for _, checkPointArea: Model in ipairs(CheckpointtaggedParts) do
-		for __, checkPoint: Instance in ipairs(checkPointArea:GetChildren()) do
-			local index = checkPoint:GetAttribute("CheckpointID")
-			if index > maxIndex then
-				maxIndex = index
-			end
+	for _, checkPoint: Model in ipairs(CheckpointtaggedParts) do
+		local index = checkPoint:GetAttribute("CheckpointID")
+		if index > maxIndex then
+			maxIndex = index
 		end
 	end
 end
