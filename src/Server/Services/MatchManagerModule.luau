@@ -12,12 +12,12 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
 local ExplorerUtils = require(ReplicatedStorage.Shared.Utils.ExplorerUtils)
+local GameSettings = require(ReplicatedStorage.Shared.Data.GameSettings)
 local MatchManagerRunController = require(ServerScriptService.Server.Services.MatchManagerRunController)
 local Net = require(ServerScriptService.Server.Net)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 local Max_Player_To_Run = 4
-local Time_Max_To_Await_To_Star_Race = 3
 local Time_To_Stay_On_Podium = 5
 local Time_Max_To_Await_To_TP = 3
 local MinimunPlayersToStart = 1
@@ -97,14 +97,14 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace, VectorToOffsetPad)
 		CurrentTimeToTP = 0
 		task.wait()
+		Net.RaceCountdownStarted.FireList(listaDePlayers)
 		self.OnPlayersTeleportedToStartRace:Fire(listaDePlayers)
 	end
 end
 
 function MatchManagerModule:StartRaceRoutine(deltaTime)
 	CurrentTimeToStarRace += deltaTime
-	if CurrentTimeToStarRace < Time_Max_To_Await_To_Star_Race then
-		Net.RaceCountdownStarted.FireList(listaDePlayers)
+	if CurrentTimeToStarRace < GameSettings.RaceSettings.RaceCountdownDuration then
 		-- print(`Time To Start Running :{CurrentTimeToStarRace}`)
 		return
 	end
