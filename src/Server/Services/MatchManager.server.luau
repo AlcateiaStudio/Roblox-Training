@@ -40,7 +40,14 @@ end
 local function OnFinishPodium(listaDePlayers)
 	print("Finished Podium view")
 	ToggleCharacterLock(listaDePlayers, false)
-	Net.RaceFinished.FireList(listaDePlayers)
+	local playersInOrder = {}
+	local temp = MatchManagerRunController:GetAllPlayersTable()
+	for _, playerTable in pairs(temp) do
+		table.insert(playersInOrder, playerTable.player)
+	end
+
+	Net.RaceFinished.FireList(playersInOrder)
+	MatchManagerRunController:CleanAllPlayers()
 end
 
 local function _OnHeartbeat(deltaTime)
