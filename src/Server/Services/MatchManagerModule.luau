@@ -8,6 +8,7 @@ MatchManagerModule.ManagerStatus = {
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local AreaDetectorComponent = require(ServerScriptService.Server.Components.ServerAreaDetector)
@@ -20,7 +21,7 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 local Max_Player_To_Run = 4
 local Time_To_Stay_On_Podium = 5
 local Time_Max_To_Await_To_TP = 3
-local MinimunPlayersToStart = 1
+local MinimunPlayersToStart = 2
 local MaxLaps = 3
 
 local listaDePlayers = {}
@@ -57,6 +58,10 @@ function MatchManagerModule:Start()
 		if index > maxIndex then
 			maxIndex = index
 		end
+	end
+
+	if RunService:IsStudio() then
+		MinimunPlayersToStart = 1
 	end
 end
 
