@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
+local Net = require(ReplicatedStorage.Client.Net)
 
 --// Type Definitions //--
 export type Hud = {
@@ -30,15 +31,35 @@ export type LapsTexts = {
 	TotalLaps: TextLabel,
 }
 
+--// Static Vars //--
 local hud: Hud = nil
 local localPlayer = Players.LocalPlayer
 
+--------------------------------------------------------------------------------
+--// Private Functions //--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+--// Module Functions //--
+--------------------------------------------------------------------------------
 local TrackHUD = {}
 
 function TrackHUD:OnAwake()
 	if not hud then
 		TrackHUD:GetUI()
 	end
+end
+
+function TrackHUD:OnStart()
+	Net.RaceStarted.On(function(...)
+		self:Show(...)
+	end)
+
+	Net.RaceFinished.On(function(...)
+		self:Hide(...)
+	end)
+
+	self:Hide()
 end
 
 function TrackHUD:GetUI()
@@ -116,6 +137,14 @@ function TrackHUD:GetLapsTexts(): LapsTexts
 	end
 
 	return hud.Laps
+end
+
+function TrackHUD:Show()
+	hud.ScreenGui.Enabled = true
+end
+
+function TrackHUD:Hide()
+	hud.ScreenGui.Enabled = false
 end
 
 return LifetimeObject.extend(TrackHUD, "TrackHUD")
