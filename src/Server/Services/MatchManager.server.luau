@@ -61,6 +61,12 @@ local function OnStart()
 		AreaDetectorFinishRaceComponenteInstance = component
 	end)
 
+	local areaDetectorStartRaceModelCollision = AreaDetectorStartRaceModel:FindFirstChild("Collision") :: BasePart
+	local areaDetectorFinishRaceModelCollision = AreaDetectorFinishRaceModel:FindFirstChild("Collision") :: BasePart
+
+	areaDetectorStartRaceModelCollision.Transparency = 1
+	areaDetectorFinishRaceModelCollision.Transparency = 1
+
 	MatchManagerModule:Start()
 	MatchManagerInfosModule:Start()
 	MatchManagerRunController:Start()
