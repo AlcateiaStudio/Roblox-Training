@@ -149,12 +149,19 @@ function AreaDetector:_OnCharacterAdded(newCharacter: Model)
 	end
 
 	if not parts or #parts == 0 then
-		self.partsToDetect = newCharacter.PrimaryPart and { newCharacter.PrimaryPart } or {}
+		-- Wait until newCharacter.PrimaryPart exists
+		task.spawn(function()
+			while not newCharacter.PrimaryPart do
+				task.wait(0.1)
+			end
+
+			self.partsToDetect = newCharacter.PrimaryPart and { newCharacter.PrimaryPart } or {}
+			self:_UpdateOverlapParams()
+		end)
 	else
 		self.partsToDetect = parts
+		self:_UpdateOverlapParams()
 	end
-
-	self:_UpdateOverlapParams()
 end
 
 function AreaDetector:_OnCharacterRemoving()
@@ -165,7 +172,7 @@ function AreaDetector:_OnCharacterRemoving()
 end
 
 function AreaDetector:_UpdateOverlapParams()
-	areaDetectorOverlapParams.FilterDescendantsInstances = self.partsToDetect
+	areaDetectorOverlapParams:AddToFilter(self.partsToDetect)
 end
 
 function AreaDetector:_OnHeartbeat()
@@ -179,14 +186,12 @@ function AreaDetector:_OnHeartbeat()
 	-- Check if any of the player's parts are in the area
 	for _, part in ipairs(nearbyParts) do
 		for _, partToDetect in ipairs(self.partsToDetect) do
-			warn("Testing part:", part.Name, "against", partToDetect.Name)
 			if part == partToDetect then
 				isCurrentlyInArea = true
 				break
 			end
 		end
 		if isCurrentlyInArea then
-			warn("AreaDetector: Player is currently in area for", self.Instance.Name)
 			break
 		end
 	end
