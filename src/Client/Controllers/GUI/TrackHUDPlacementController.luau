@@ -2,13 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local PlacementEndingStrings = require(ReplicatedStorage.Shared.Data.PlacementEndingStrings)
-local TrackHUDController = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUDController)
+local TrackHUD = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUD)
 
 local Net = require(ReplicatedStorage.Client.Net)
 
 local TrackHUDPlacementController = {}
 
-local placementNumberTexts: TrackHUDController.PlacementTexts
+local placementNumberTexts: TrackHUD.PlacementTexts
 
 local function OnPlacementChanged(placement: number)
 	placementNumberTexts.Placement.Text = tostring(placement)
@@ -16,7 +16,7 @@ local function OnPlacementChanged(placement: number)
 end
 
 function TrackHUDPlacementController:OnStart()
-	placementNumberTexts = TrackHUDController:GetPlacementTexts()
+	placementNumberTexts = TrackHUD:GetPlacementTexts()
 
 	assert(placementNumberTexts, "Placement texts were not found")
 

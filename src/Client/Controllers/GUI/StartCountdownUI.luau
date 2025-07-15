@@ -24,7 +24,7 @@ local currentCountdownStep: number = 0
 local lights: { Frame } = {}
 local StopClock: () -> () = nil
 
-local StartCountdownUIController = {}
+local StartCountdownUI = {}
 
 local redLightColors = {
 	off = Color3.fromRGB(85, 0, 0),
@@ -59,11 +59,11 @@ local function ResetLights()
 end
 
 local function OnCountdownStarted()
-	StartCountdownUIController:ToggleUI(true)
+	StartCountdownUI:ToggleUI(true)
 end
 
 local function OnCountdownEnded()
-	StartCountdownUIController:ToggleUI(false)
+	StartCountdownUI:ToggleUI(false)
 	ResetLights()
 end
 
@@ -109,21 +109,21 @@ local function GetUI()
 	assert(countdownUI.ScreenGui.ResetOnSpawn == false, "UI should not reset on spawn")
 end
 
-function StartCountdownUIController:ToggleUI(toggle: boolean)
+function StartCountdownUI:ToggleUI(toggle: boolean)
 	countdownUI.ScreenGui.Enabled = toggle or false
 end
 --------------------------------------------------------------------------------
 --// Module Functions //--
 --------------------------------------------------------------------------------
-function StartCountdownUIController:OnAwake()
+function StartCountdownUI:OnAwake()
 	if not countdownUI then
 		GetUI()
 	end
 
-	StartCountdownUIController:ToggleUI(false)
+	StartCountdownUI:ToggleUI(false)
 end
 
-function StartCountdownUIController:OnStart()
+function StartCountdownUI:OnStart()
 	local function onTrackStartedCountdown()
 		print("INITIALIZED TIMER!!!!")
 		OnCountdownStarted()
@@ -133,4 +133,4 @@ function StartCountdownUIController:OnStart()
 	Net.RaceCountdownStarted.On(onTrackStartedCountdown)
 end
 
-return LifetimeObject.extend(StartCountdownUIController, "StartCountdownUIController")
+return LifetimeObject.extend(StartCountdownUI, "StartCountdownUI")

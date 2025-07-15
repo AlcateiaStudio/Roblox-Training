@@ -71,12 +71,12 @@ end
 function DashPanel:Stop() end
 
 function DashPanel:SetUpAreaDetectorEvents()
-	self.areaDetector.Signals.Entered:Connect(function(player: Player)
-		self:OnPlayerEnter(player)
+	self.areaDetector.Signals.Entered:Connect(function()
+		self:OnPlayerEnter(localPlayer)
 	end)
 
-	self.areaDetector.Signals.Left:Connect(function(player: Player)
-		self:OnPlayerExit(player)
+	self.areaDetector.Signals.Left:Connect(function()
+		self:OnPlayerExit(localPlayer)
 	end)
 end
 

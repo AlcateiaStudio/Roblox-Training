@@ -33,15 +33,15 @@ export type LapsTexts = {
 local hud: Hud = nil
 local localPlayer = Players.LocalPlayer
 
-local TrackHUDController = {}
+local TrackHUD = {}
 
-function TrackHUDController:OnAwake()
+function TrackHUD:OnAwake()
 	if not hud then
-		TrackHUDController:GetUI()
+		TrackHUD:GetUI()
 	end
 end
 
-function TrackHUDController:GetUI()
+function TrackHUD:GetUI()
 	hud = {
 		ScreenGui = nil,
 		Coins = nil,
@@ -86,7 +86,7 @@ function TrackHUDController:GetUI()
 	assert(hud.ScreenGui.ResetOnSpawn == false, "UI should not reset on spawn")
 end
 
-function TrackHUDController:GetTimeTexts(): TimerTexts
+function TrackHUD:GetTimeTexts(): TimerTexts
 	if not hud then
 		self:GetUI()
 	end
@@ -94,7 +94,7 @@ function TrackHUDController:GetTimeTexts(): TimerTexts
 	return hud.Timer
 end
 
-function TrackHUDController:GetTrackImage(): ImageLabel
+function TrackHUD:GetTrackImage(): ImageLabel
 	if not hud then
 		self:GetUI()
 	end
@@ -102,7 +102,7 @@ function TrackHUDController:GetTrackImage(): ImageLabel
 	return hud.TrackImage
 end
 
-function TrackHUDController:GetPlacementTexts(): PlacementTexts
+function TrackHUD:GetPlacementTexts(): PlacementTexts
 	if not hud then
 		self:GetUI()
 	end
@@ -110,7 +110,7 @@ function TrackHUDController:GetPlacementTexts(): PlacementTexts
 	return hud.Placement
 end
 
-function TrackHUDController:GetLapsTexts(): LapsTexts
+function TrackHUD:GetLapsTexts(): LapsTexts
 	if not hud then
 		self:GetUI()
 	end
@@ -118,4 +118,4 @@ function TrackHUDController:GetLapsTexts(): LapsTexts
 	return hud.Laps
 end
 
-return LifetimeObject.extend(TrackHUDController, "TrackHUDController")
+return LifetimeObject.extend(TrackHUD, "TrackHUD")

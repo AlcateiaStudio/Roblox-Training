@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --// Imports //--
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Net = require(ReplicatedStorage.Client.Net)
-local TrackHUDController = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUDController)
+local TrackHUD = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUD)
 
 --// Constants //--
 local PRE_LAPS_STRING = "/ "
@@ -12,7 +12,7 @@ local TEST_LAPS = 10 -- TODO: Change this to the actual number of laps in the ga
 
 local TrackHUDLapsController = {}
 
-local lapsTexts: TrackHUDController.LapsTexts
+local lapsTexts: TrackHUD.LapsTexts
 local currentLap = 1
 
 local function OnLapChanged()
@@ -25,7 +25,7 @@ local function OnRaceStarted()
 end
 
 function TrackHUDLapsController:OnStart()
-	lapsTexts = TrackHUDController:GetLapsTexts()
+	lapsTexts = TrackHUD:GetLapsTexts()
 
 	assert(lapsTexts, "Placement texts were not found")
 

@@ -52,8 +52,8 @@ end
 function ObjectThatCausesDamage:Stop() end
 
 function ObjectThatCausesDamage:SetUpAreaDetectorEvents()
-	self.areaDetector.Signals.Entered:Connect(function(player: Player)
-		self:CauseDamage(player)
+	self.areaDetector.Signals.Entered:Connect(function()
+		self:CauseDamage(localPlayer)
 	end)
 end
 

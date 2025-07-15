@@ -52,8 +52,8 @@ end
 function JumpPad:Stop() end
 
 function JumpPad:SetUpAreaDetectorEvents()
-	self.areaDetector.Signals.Entered:Connect(function(player: Player)
-		self:SetJump(player)
+	self.areaDetector.Signals.Entered:Connect(function()
+		self:SetJump(localPlayer)
 	end)
 end
 

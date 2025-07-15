@@ -18,8 +18,8 @@ export type AreaDetector = {
 	partsToDetect: { BasePart },
 	isPlayerInArea: boolean,
 	Signals: {
-		Entered: RBXScriptConnection,
-		Left: RBXScriptConnection,
+		Entered: RBXScriptSignal,
+		Left: RBXScriptSignal,
 	},
 	Callbacks: {
 		OnCharacterAdded: ((Model) -> { BasePart })?,
@@ -192,14 +192,14 @@ function AreaDetector:_OnHeartbeat()
 	-- Handle state changes
 	if isCurrentlyInArea and not self.isPlayerInArea then
 		self.isPlayerInArea = true
-		self.Signals.Entered:Fire(localPlayer)
+		self.Signals.Entered:Fire()
 	elseif not isCurrentlyInArea and self.isPlayerInArea then
 		self.isPlayerInArea = false
-		self.Signals.Left:Fire(localPlayer)
+		self.Signals.Left:Fire()
 	end
 
 	if isCurrentlyInArea and self.isPlayerInArea then
-		self.Signals.Stay:Fire(localPlayer)
+		self.Signals.Stay:Fire()
 	end
 end
 
