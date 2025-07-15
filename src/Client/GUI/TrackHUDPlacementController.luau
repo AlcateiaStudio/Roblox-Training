@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local PlacementEndingStrings = require(ReplicatedStorage.Shared.Data.PlacementEndingStrings)
-local TrackHUD = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUD)
+local TrackHUD = require(ReplicatedStorage.Client.GUI.TrackHUD)
 
 local Net = require(ReplicatedStorage.Client.Net)
 

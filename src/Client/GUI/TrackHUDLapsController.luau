@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --// Imports //--
 local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Net = require(ReplicatedStorage.Client.Net)
-local TrackHUD = require(ReplicatedStorage.Client.Controllers.GUI.TrackHUD)
+local TrackHUD = require(ReplicatedStorage.Client.GUI.TrackHUD)
 
 --// Constants //--
 local PRE_LAPS_STRING = "/ "

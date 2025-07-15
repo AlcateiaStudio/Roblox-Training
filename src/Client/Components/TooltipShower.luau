@@ -10,7 +10,7 @@ local data = shared.Data
 local ClientAreaDetector = require(client.Components.ClientAreaDetector)
 local Component = require(ReplicatedStorage.Packages.Component)
 local Corridas = require(data.Corridas)
-local TooltipUI = require(ReplicatedStorage.Client.Controllers.GUI.TooltipUI)
+local TooltipUI = require(ReplicatedStorage.Client.GUI.TooltipUI)
 
 --// Constants //--
 local COMPONENT_DETECTION_TIMEOUT = 3
