@@ -171,10 +171,17 @@ local function WriteEVENT_RaceStarted(Value: nil): ()
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
 end
 
-local function WriteEVENT_RaceFinished(Value: nil): ()
-	-- Allocate BLOCK: 1 bytes
-	local BLOCK_START = Allocate(1)
+local function WriteEVENT_RaceFinished(Value: { Player }): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
+	-- START ARRAY
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, #Value)
+	for Index = 1, #Value do
+		local Item_1 = Value[Index]
+		table.insert(SendInstances, Item_1 or Null)
+	end
+	-- END ARRAY
 end
 
 local function WriteEVENT_PlayerPlacementChanged(Value: number): ()
@@ -556,12 +563,12 @@ local Returns = table.freeze({
 		end,
 	},
 	RaceFinished = {
-		Fire = function(Player: Player, Value: nil): ()
+		Fire = function(Player: Player, Value: { Player }): ()
 			Load(PlayersMap[Player])
 			WriteEVENT_RaceFinished(Value)
 			PlayersMap[Player] = Save()
 		end,
-		FireAll = function(Value: nil): ()
+		FireAll = function(Value: { Player }): ()
 			Load()
 			WriteEVENT_RaceFinished(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
@@ -573,7 +580,7 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireList = function(List: {Player}, Value: nil): ()
+		FireList = function(List: {Player}, Value: { Player }): ()
 			Load()
 			WriteEVENT_RaceFinished(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
@@ -585,7 +592,7 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		FireExcept = function(Except: Player, Value: nil): ()
+		FireExcept = function(Except: Player, Value: { Player }): ()
 			Load()
 			WriteEVENT_RaceFinished(Value)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances

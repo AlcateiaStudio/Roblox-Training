@@ -175,8 +175,23 @@ local function ReadEVENT_RaceStarted(): (nil)
 	return nil
 end
 
-local function ReadEVENT_RaceFinished(): (nil)
-	return nil
+local function ReadEVENT_RaceFinished(): ({ Player })
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
+	-- START ARRAY
+	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
+	if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
+	local Value = table.create(Length)
+	for Index = 1, Length do
+		RecieveInstanceCursor += 1
+		local Item_1 = RecieveInstances[RecieveInstanceCursor]
+		if typeof(Item_1) ~= "Instance" then error(`Expected an Instance, got {typeof(Item_1)} instead.`) end
+		if not Item_1:IsA("Player") then error(`Expected an Instance of type "Player", got "{Item_1.ClassName}" instead.`) end
+		table.insert(Value, Item_1)
+	end
+	-- END ARRAY
+	return Value
 end
 
 local function ReadEVENT_PlayerPlacementChanged(): (number)
@@ -377,7 +392,7 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 				table.insert(Queue.Reliable[1], {Value} :: {any})
 			end
 		elseif Index == 2 then
-			local Value: nil = ReadEVENT_RaceFinished()
+			local Value: { Player } = ReadEVENT_RaceFinished()
 			if #Events.Reliable[2] > 0 then
 				for _, Listener in Events.Reliable[2] do
 					Listener(Value)
@@ -510,7 +525,7 @@ local Returns = table.freeze({
 		end
 	},
 	RaceFinished = {
-		On = function(Listener: (Value: nil) -> ()): () -> ()
+		On = function(Listener: (Value: { Player }) -> ()): () -> ()
 			table.insert(Events.Reliable[2], Listener)
 			for Index, Arguments in Queue.Reliable[2] do
 				Listener(table.unpack(Arguments))

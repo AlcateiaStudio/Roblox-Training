@@ -18,6 +18,7 @@ event RaceFinished {
     from: Server,
     type: Reliable,
     call: ManySync,
+    data: Instance(Player)[]
 }
 
 event PlayerPlacementChanged {
