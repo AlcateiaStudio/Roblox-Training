@@ -12,7 +12,7 @@ local CHECKPOINT_TAG = "Checkpoint"
 local CHECKPOINT_RESPAW_TAG = "RespawnArea"
 
 local CanInteractWithRace = false
-local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
+local CoinTaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointTaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
 local CheckpointRespawnTaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { BasePart }
 
@@ -48,7 +48,7 @@ function PlayerMatchManagerInfos:Start()
 	Net.PlayerReachedFinishLine.On(OnPlayerReachedFinishLine)
 
 	CollectionService:GetInstanceAddedSignal(COIN_TAG):Connect(function(instance: Instance)
-		AssignTouchedConnection(instance, CointaggedParts)
+		AssignTouchedConnection(instance, CoinTaggedParts)
 	end)
 
 	CollectionService:GetInstanceAddedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
@@ -56,14 +56,14 @@ function PlayerMatchManagerInfos:Start()
 	end)
 
 	CollectionService:GetInstanceRemovedSignal(COIN_TAG):Connect(function(instance: Instance)
-		RemoveTouchedConnection(instance, CointaggedParts)
+		RemoveTouchedConnection(instance, CoinTaggedParts)
 	end)
 
 	CollectionService:GetInstanceRemovedSignal(CHECKPOINT_TAG):Connect(function(instance: Instance)
 		RemoveTouchedConnection(instance, CheckpointTaggedParts)
 	end)
 
-	for _, coin in ipairs(CointaggedParts) do
+	for _, coin in ipairs(CoinTaggedParts) do
 		coin.PrimaryPart.Touched:Connect(function(hit)
 			if CanInteract() == false then
 				return
