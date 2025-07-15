@@ -1,5 +1,5 @@
-local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local serverServicesFolder = ServerScriptService.Server.Services
 local componentsFolder = ServerScriptService.Server.Components
@@ -8,8 +8,8 @@ local commandsFolder = ServerScriptService.Server.Commander.Commands
 local commanderTypesFolder = ServerScriptService.Server.Commander.Types
 local commanderHooksFolder = ServerScriptService.Server.Commander.Hooks
 
-local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 local Cmdr = require(ReplicatedStorage.Packages.Cmdr)
+local LifetimeObject = require(ReplicatedStorage.Shared.System.LifetimeObject)
 
 local debug = false
 
@@ -51,4 +51,4 @@ LifetimeObject.AwakeAll()
 -- Phase 2: Start all objects
 LifetimeObject.StartAll()
 
-printDebug("🎯 Server Lifetime System initialized successfully!")
+print("🎯 All Server Lifetime Systems initialized successfully!")

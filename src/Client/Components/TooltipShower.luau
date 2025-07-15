@@ -77,8 +77,6 @@ function TooltipShower:Start()
 					TooltipUI:Hide()
 				end
 			end)
-
-			warn("TooltipShower: ClientAreaDetector started for", self.Instance.Name)
 		end)
 		:catch(function(err)
 			warn("TooltipShower: Failed to get ClientAreaDetector for", self.Instance.Name, "Error:", err)

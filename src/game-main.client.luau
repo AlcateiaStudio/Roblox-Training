@@ -55,7 +55,7 @@ LifetimeObject.AwakeAll()
 -- Phase 2: Start all objects
 LifetimeObject.StartAll()
 
-printDebug("🎯 Lifetime System initialized successfully!")
+print("🎯 All Client Lifetime Systems initialized successfully!")
 
 --------------------------------------------------------------------------------
 --// Commander //--
