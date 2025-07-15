@@ -1,5 +1,6 @@
 export type Corrida = {
 	Nome: string,
+	Description: string,
 	TrackImageID: string,
 	LargadaPosition: UDim2,
 	Bounds: ObjectValue?,
@@ -42,9 +43,10 @@ local function GetBounds(corridaFolder: Folder): ObjectValue?
 	return boundsPart
 end
 
-local function CreateCorrida(nome: string, trackImageID: string, largadaPosition: UDim2): Corrida
+local function CreateCorrida(nome: string, description: string, trackImageID: string, largadaPosition: UDim2): Corrida
 	return {
 		Nome = nome,
+		Description = description,
 		TrackImageID = trackImageID,
 		LargadaPosition = largadaPosition,
 		Bounds = GetBounds(GetCorridaFolder(nome)),
@@ -52,7 +54,12 @@ local function CreateCorrida(nome: string, trackImageID: string, largadaPosition
 end
 
 local Corridas = {
-	CorridaTabajara = CreateCorrida("Tabajara Track", "rbxassetid://1234567890", UDim2.new(0.5, 0, 0.5, 0)),
+	Tabajara = CreateCorrida(
+		"Tabajara Track",
+		"Um super circuito cheio de curvas e desafios! (É o circuito tutorial, quem estou enganando?)",
+		"rbxassetid://1234567890",
+		UDim2.new(0.5, 0, 0.5, 0)
+	),
 }
 
 return Corridas

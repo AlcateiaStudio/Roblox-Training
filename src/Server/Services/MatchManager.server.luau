@@ -48,14 +48,14 @@ local function _OnHeartbeat(deltaTime)
 end
 
 local function OnStart()
-	local AreaDetectorStartRaceModel: Model = workspace:WaitForChild("Tabajara Track"):WaitForChild("AreaDetectorRunStart", 10) :: Model
+	local AreaDetectorStartRaceModel: Model = workspace.Corridas["Tabajara Track"]:WaitForChild("AreaDetectorRunStart", 2) :: Model
 	assert(AreaDetectorStartRaceModel, "AreaDetector not found in workspace")
 	AreaDetectorComponent:WaitForInstance(AreaDetectorStartRaceModel):andThen(function(component: AreaDetectorComponent.AreaDetector)
 		AreaDetectorStartRaceComponenteInstance = component
 		RunService.Heartbeat:Connect(_OnHeartbeat)
 	end)
 
-	local AreaDetectorFinishRaceModel: Model = workspace:WaitForChild("Tabajara Track"):WaitForChild("AreaDetectorRunFinish", 10) :: Model
+	local AreaDetectorFinishRaceModel: Model = workspace.Corridas["Tabajara Track"]:WaitForChild("AreaDetectorRunFinish", 2) :: Model
 	assert(AreaDetectorFinishRaceModel, "AreaDetector not found in workspace")
 	AreaDetectorComponent:WaitForInstance(AreaDetectorFinishRaceModel):andThen(function(component: AreaDetectorComponent.AreaDetector)
 		AreaDetectorFinishRaceComponenteInstance = component

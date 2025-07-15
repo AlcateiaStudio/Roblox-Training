@@ -179,12 +179,14 @@ function AreaDetector:_OnHeartbeat()
 	-- Check if any of the player's parts are in the area
 	for _, part in ipairs(nearbyParts) do
 		for _, partToDetect in ipairs(self.partsToDetect) do
+			warn("Testing part:", part.Name, "against", partToDetect.Name)
 			if part == partToDetect then
 				isCurrentlyInArea = true
 				break
 			end
 		end
 		if isCurrentlyInArea then
+			warn("AreaDetector: Player is currently in area for", self.Instance.Name)
 			break
 		end
 	end

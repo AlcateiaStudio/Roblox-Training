@@ -1,7 +1,7 @@
 local ExplorerUtils = {}
 
 function ExplorerUtils:GetChildsFromName(TransformsToStarRace, name: string)
-	local part = workspace:WaitForChild("Tabajara Track"):FindFirstChild(name, 10)
+	local part = workspace:WaitForChild("Corridas"):WaitForChild("Tabajara Track"):FindFirstChild(name, 10)
 	for i, basePart: BasePart in ipairs(part:GetChildren()) do
 		table.insert(TransformsToStarRace, basePart.CFrame.Position)
 	end

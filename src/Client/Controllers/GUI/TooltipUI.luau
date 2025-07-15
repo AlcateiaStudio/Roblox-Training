@@ -30,9 +30,9 @@ local function GetUI()
 	tooltipUI.ScreenGui = playerGui:WaitForChild("Tooltip")
 
 	local configuration = tooltipUI.ScreenGui:WaitForChild("Configuration")
-	local tooltipTitleValue = configuration:WaitForChild("TooltipTitle") :: ObjectValue
+	local tooltipTitleValue = configuration:WaitForChild("TooltipTitle", 2) :: ObjectValue
 	tooltipUI.TooltipTitle = tooltipTitleValue.Value :: TextLabel
-	local tooltipDescriptionValue = configuration:WaitForChild("TooltipDescription") :: ObjectValue
+	local tooltipDescriptionValue = configuration:WaitForChild("TooltipDescription", 2) :: ObjectValue
 	tooltipUI.TooltipDescription = tooltipDescriptionValue.Value :: TextLabel
 
 	-- Validation
@@ -48,10 +48,11 @@ function TooltipUI:OnAwake()
 	end
 end
 
-function TooltipUI:Show(tooltipID: string, tooltipKind: TooltipKind?)
+function TooltipUI:Show(title: string, description: string, tooltipKind: TooltipKind?)
 	tooltipKind = tooltipKind or "Central"
 	tooltipUI.ScreenGui.Enabled = true
-	tooltipUI.TooltipDescription.Text = tooltipID
+	tooltipUI.TooltipTitle.Text = title
+	tooltipUI.TooltipDescription.Text = description
 end
 
 function TooltipUI:Hide()
