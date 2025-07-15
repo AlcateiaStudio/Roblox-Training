@@ -72,14 +72,14 @@ local function GetUI()
 
 		-- Start hidden
 		tooltipUI.MainFrame.Position = hiddenPosition
-		tooltipUI.MainFrame.BackgroundTransparency = 1
+		-- tooltipUI.MainFrame.BackgroundTransparency = 1
 		-- Make all text transparent initially
-		if tooltipUI.TooltipTitle then
-			tooltipUI.TooltipTitle.TextTransparency = 1
-		end
-		if tooltipUI.TooltipDescription then
-			tooltipUI.TooltipDescription.TextTransparency = 1
-		end
+		-- if tooltipUI.TooltipTitle then
+		-- tooltipUI.TooltipTitle.TextTransparency = 1
+		-- end
+		-- if tooltipUI.TooltipDescription then
+		-- tooltipUI.TooltipDescription.TextTransparency = 1
+		-- end
 	end
 
 	-- Validation
@@ -116,23 +116,23 @@ local function ShowUIWithAnimation()
 		-- Create tweens for position and transparency
 		local positionTween = TweenService:Create(tooltipUI.MainFrame, TWEEN_INFO, {
 			Position = showPosition,
-			BackgroundTransparency = 0,
+			-- BackgroundTransparency = 0,
 		})
 
-		local titleTween = TweenService:Create(tooltipUI.TooltipTitle, TWEEN_INFO, {
-			TextTransparency = 0,
-		})
+		-- local titleTween = TweenService:Create(tooltipUI.TooltipTitle, TWEEN_INFO, {
+		-- 	TextTransparency = 0,
+		-- })
 
-		local descriptionTween = TweenService:Create(tooltipUI.TooltipDescription, TWEEN_INFO, {
-			TextTransparency = 0,
-		})
+		-- local descriptionTween = TweenService:Create(tooltipUI.TooltipDescription, TWEEN_INFO, {
+		-- 	TextTransparency = 0,
+		-- })
 
 		currentTween = positionTween
 
 		-- Play all tweens
 		positionTween:Play()
-		titleTween:Play()
-		descriptionTween:Play()
+		-- titleTween:Play()
+		-- descriptionTween:Play()
 
 		-- Handle tween completion
 		positionTween.Completed:Connect(function(playbackState)
@@ -160,20 +160,20 @@ local function HideUIWithAnimation()
 			BackgroundTransparency = 1,
 		})
 
-		local titleTween = TweenService:Create(tooltipUI.TooltipTitle, TWEEN_INFO, {
-			TextTransparency = 1,
-		})
+		-- local titleTween = TweenService:Create(tooltipUI.TooltipTitle, TWEEN_INFO, {
+		-- 	TextTransparency = 1,
+		-- })
 
-		local descriptionTween = TweenService:Create(tooltipUI.TooltipDescription, TWEEN_INFO, {
-			TextTransparency = 1,
-		})
+		-- local descriptionTween = TweenService:Create(tooltipUI.TooltipDescription, TWEEN_INFO, {
+		-- 	TextTransparency = 1,
+		-- })
 
 		currentTween = positionTween
 
 		-- Play all tweens
 		positionTween:Play()
-		titleTween:Play()
-		descriptionTween:Play()
+		-- titleTween:Play()
+		-- descriptionTween:Play()
 
 		-- Handle tween completion
 		positionTween.Completed:Connect(function(playbackState)
