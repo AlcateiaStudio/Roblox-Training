@@ -26,7 +26,7 @@ local MaxLaps = 3
 
 local listaDePlayers = {}
 local listaDeCharacters = {}
-local TransformsToStarRace = {}
+local TransformsToStartRace = {}
 local TransformsToPodium = {}
 local maxIndex = -1
 
@@ -45,15 +45,24 @@ MatchManagerModule.OnFinishPodiumViewCallback = Signal.new()
 MatchManagerModule.CurrentManagerStatus = MatchManagerModule.ManagerStatus.WaitingForTp
 
 function MatchManagerModule:Start()
-	ExplorerUtils:GetChildsFromName(TransformsToStarRace, "StartRacePositionModel")
+	ExplorerUtils:GetChildsFromName(TransformsToStartRace, "StartRacePositionModel")
 	ExplorerUtils:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
-	self.ResteAllVariables()
+	self.ResetAllVariables()
 
 	local CHECKPOINT_TAG = "Checkpoint"
-	local CheckpointtaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+	local CheckpointTaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
+
+	for _, startRacePosition: BasePart in ipairs(TransformsToStartRace) do
+		startRacePosition.Transparency = 1
+	end
+
+	for _, podiumPosition: BasePart in ipairs(TransformsToPodium) do
+		podiumPosition.Transparency = 1
+	end
 
 	maxIndex = -1
-	for _, checkPoint: Model in ipairs(CheckpointtaggedParts) do
+
+	for _, checkPoint: Model in ipairs(CheckpointTaggedParts) do
 		local index = checkPoint:GetAttribute("CheckpointID")
 		if index > maxIndex then
 			maxIndex = index
@@ -65,10 +74,10 @@ function MatchManagerModule:Start()
 	end
 end
 
-function MatchManagerModule:AdjustPostionFromObjectsToList(charactersInArea, TransformsToStarRace, offset)
+function MatchManagerModule:AdjustPositionFromObjectsToList(charactersInArea, TransformsToStarRace: { BasePart }, offset)
 	local index = 1
-	for player, rootPart in pairs(charactersInArea) do
-		local targetPosition = CFrame.new(offset + TransformsToStarRace[index])
+	for _, rootPart in pairs(charactersInArea) do
+		local targetPosition = (CFrame.new(offset + TransformsToStarRace[index].CFrame.Position) * TransformsToStarRace[index].CFrame.Rotation)
 		rootPart.Parent:PivotTo(targetPosition)
 		index += 1
 		if index > Max_Player_To_Run then
@@ -77,7 +86,7 @@ function MatchManagerModule:AdjustPostionFromObjectsToList(charactersInArea, Tra
 	end
 end
 
-function MatchManagerModule:ResteAllVariables()
+function MatchManagerModule:ResetAllVariables()
 	listaDePlayers = {}
 	listaDeCharacters = {}
 	CurrentTimeToTP = 0
@@ -97,7 +106,7 @@ function MatchManagerModule:WaitingOnPadToStartRace(deltaTime, playersInArea, ch
 		end
 
 		self.CurrentManagerStatus = self.ManagerStatus.WaitingToStarRace
-		self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToStarRace, VectorToOffsetPad)
+		self:AdjustPositionFromObjectsToList(listaDeCharacters, TransformsToStartRace, VectorToOffsetPad)
 		CurrentTimeToTP = 0
 		task.wait()
 		Net.RaceCountdownStarted.FireList(listaDePlayers)
@@ -138,7 +147,7 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 				self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index], listaDePlayers)
 				self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
 				task.wait()
-				self:AdjustPostionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
+				self:AdjustPositionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
 
 				MatchManagerRunController:CleanAllPlayers()
 			end
@@ -167,7 +176,7 @@ function MatchManagerModule:PodiumView(deltaTime)
 		self.CurrentManagerStatus = self.ManagerStatus.WaitingForTp
 		task.wait()
 		self.OnFinishPodiumViewCallback:Fire(listaDePlayers)
-		self.ResteAllVariables()
+		self.ResetAllVariables()
 	end
 end
 

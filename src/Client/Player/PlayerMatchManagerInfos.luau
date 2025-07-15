@@ -14,7 +14,7 @@ local CHECKPOINT_RESPAW_TAG = "RespawnArea"
 local CanInteractWithRace = false
 local CointaggedParts = CollectionService:GetTagged(COIN_TAG) :: { Model }
 local CheckpointTaggedParts = CollectionService:GetTagged(CHECKPOINT_TAG) :: { Model }
-local CheckpointRespawnTaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { Model }
+local CheckpointRespawnTaggedParts = CollectionService:GetTagged(CHECKPOINT_RESPAW_TAG) :: { BasePart }
 
 local timeToTPMax = 1.5
 local timeToTP = 0
@@ -96,7 +96,7 @@ function PlayerMatchManagerInfos:Start()
 
 	for _, respawnZone in ipairs(CheckpointRespawnTaggedParts) do
 		if respawnZone:IsA("BasePart") then
-			local basePart = respawnZone :: BasePart
+			local basePart = respawnZone
 			basePart.Touched:Connect(function(hit)
 				if CanInteract() == false then
 					return
@@ -165,7 +165,7 @@ function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
 	Teleporting = true
 	PlayerController:SetPlayerState(2)
 
-	local Position: Vector3
+	local Position: BasePart
 	for _, checkPoint: BasePart in ipairs(CheckpointTaggedParts) do
 		local index = checkPoint:GetAttribute("CheckpointID")
 
@@ -175,7 +175,7 @@ function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
 
 		local respawnPosition = checkPoint:FindFirstChild("RespawnPosition") :: BasePart
 
-		Position = respawnPosition.Position
+		Position = respawnPosition
 		break
 	end
 
@@ -184,7 +184,7 @@ function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
 			task.wait()
 		end
 		PlayerController:SetPlayerState(0)
-		local newCFrame = CFrame.new(Position + Vector3.new(0, 2, 0))
+		local newCFrame = CFrame.new(Position.CFrame.Position + Vector3.new(0, 2, 0)) * Position.CFrame.Rotation
 		Player:PivotTo(newCFrame)
 	end)
 end
