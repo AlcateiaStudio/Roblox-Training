@@ -49,8 +49,8 @@ end
 function ForceApplier:Stop() end
 
 function ForceApplier:SetUpAreaDetectorEvents()
-	self.areaDetector.Signals.Stay:Connect(function(player: Player)
-		self:OnPlayerTrigger(player)
+	self.areaDetector.Signals.Stay:Connect(function()
+		self:OnPlayerTrigger(localPlayer)
 	end)
 end
 
