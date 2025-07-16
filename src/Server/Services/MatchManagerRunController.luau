@@ -105,7 +105,7 @@ function MatchManagerRunController:PlayerReachedFinishLine(player: Player)
 end
 
 function MatchManagerRunController:OnPlayerEnter(_player: Player)
-	local playerTable = { player = _player, checkpoint = 0, lap = 0 }
+	local playerTable = { player = _player, checkpoint = 0, lap = 0, finished = false }
 	table.insert(PlayerTable, playerTable)
 end
 

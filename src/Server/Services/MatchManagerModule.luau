@@ -47,6 +47,11 @@ MatchManagerModule.CurrentManagerStatus = MatchManagerModule.ManagerStatus.Waiti
 function MatchManagerModule:Start()
 	ExplorerUtils:GetChildsFromName(TransformsToStartRace, "StartRacePositionModel")
 	ExplorerUtils:GetChildsFromName(TransformsToPodium, "PodiumRacePositionModel")
+
+	table.sort(TransformsToPodium, function(a, b)
+		return a:GetAttribute("pos") < b:GetAttribute("pos")
+	end)
+
 	self.ResetAllVariables()
 
 	local CHECKPOINT_TAG = "Checkpoint"
@@ -135,6 +140,10 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 	for index, player: Player in ipairs(AreaDetectorFinishRace.playersInArea) do
 		local playerTable = MatchManagerRunController:GetPlayerTable(player)
 
+		if playerTable.finished == true then
+			continue
+		end
+
 		if player ~= playerTable.player then
 			continue
 		end
@@ -142,6 +151,7 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 		if playerTable.lap + 1 > MaxLaps then
 			self.OnPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index])
 			QuantityPlayersCrossedFinishLine += 1
+			playerTable.finished = true
 
 			if #listaDePlayers == QuantityPlayersCrossedFinishLine then
 				self.OnLastPlayerCrossedFinishLine:Fire(AreaDetectorFinishRace.playersInArea[index], listaDePlayers)
