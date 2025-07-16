@@ -118,6 +118,10 @@ function MatchManagerRunController:GetPlayerTable(_player: Player)
 	return
 end
 
+function MatchManagerRunController:GetAllPlayersTable()
+	return PlayerTable
+end
+
 function MatchManagerRunController:CleanAllPlayers()
 	PlayerTable = {}
 end

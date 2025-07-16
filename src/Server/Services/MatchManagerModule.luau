@@ -148,8 +148,6 @@ function MatchManagerModule:WaitFinishRace(AreaDetectorFinishRace: AreaDetectorC
 				self.CurrentManagerStatus = self.ManagerStatus.WaitingForPodium
 				task.wait()
 				self:AdjustPositionFromObjectsToList(listaDeCharacters, TransformsToPodium, VectorToOffsetPad)
-
-				MatchManagerRunController:CleanAllPlayers()
 			end
 		else
 			if playerTable.checkpoint ~= maxIndex then
