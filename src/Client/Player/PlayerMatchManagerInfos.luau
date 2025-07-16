@@ -134,6 +134,7 @@ end
 
 function PlayerMatchManagerInfos:_OnHeartbeat(deltaTime)
 	self:HandleTeleporting(deltaTime)
+	self:RotateCoins(deltaTime)
 end
 
 function PlayerMatchManagerInfos:HandleTeleporting(deltaTime: number)
@@ -187,6 +188,16 @@ function PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(Player: Model)
 		local newCFrame = CFrame.new(Position.CFrame.Position + Vector3.new(0, 2, 0)) * Position.CFrame.Rotation
 		Player:PivotTo(newCFrame)
 	end)
+end
+
+function PlayerMatchManagerInfos:RotateCoins(deltaTime: number)
+	local rotationY = math.rad(180) * deltaTime
+
+	for _, coin in pairs(CoinTaggedParts) do
+		local coinModel = coin:FindFirstChild("CoinModel") :: BasePart
+
+		coinModel.CFrame *= CFrame.Angles(0, rotationY, 0)
+	end
 end
 
 PlayerMatchManagerInfos:Start()

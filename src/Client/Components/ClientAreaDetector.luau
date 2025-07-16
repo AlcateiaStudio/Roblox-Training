@@ -32,7 +32,7 @@ export type AreaDetector = {
 }
 
 --// Control //--
-local TIME_TO_UPDATE_MAX = 0.05
+local TIME_TO_UPDATE_MAX = 0.033
 local timeToUpdate = 0
 
 local localPlayer = Players.LocalPlayer
