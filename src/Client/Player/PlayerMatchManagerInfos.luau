@@ -2,11 +2,12 @@ PlayerMatchManagerInfos = {}
 
 local ClientScriptService = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local Net = require(ClientScriptService.Client.Net)
 local PlayerController = require(ClientScriptService.Client.Player.PlayerController)
-
+local localPlayer = Players.LocalPlayer
 local COIN_TAG = "Coin"
 local CHECKPOINT_TAG = "Checkpoint"
 local CHECKPOINT_RESPAW_TAG = "RespawnArea"
@@ -22,7 +23,10 @@ local Teleporting = false
 local CurrentCheckpointRunIndex = 0
 
 function PlayerMatchManagerInfos:Start()
-	local function CanInteract()
+	local function CanInteract(hit: BasePart)
+		if hit.Parent ~= localPlayer.Character then
+			return false
+		end
 		return CanInteractWithRace
 	end
 
@@ -65,7 +69,7 @@ function PlayerMatchManagerInfos:Start()
 
 	for _, coin in ipairs(CoinTaggedParts) do
 		coin.PrimaryPart.Touched:Connect(function(hit)
-			if CanInteract() == false then
+			if CanInteract(hit) == false then
 				return
 			end
 			local temp = coin:GetAttribute("UID") :: number
@@ -81,7 +85,7 @@ function PlayerMatchManagerInfos:Start()
 			print(` {checkpointBasePart}`)
 
 			checkpointBasePart.Touched:Connect(function(hit)
-				if CanInteract() == false then
+				if CanInteract(hit) == false then
 					return
 				end
 				PlayerMatchManagerInfos:TouchedCheckpoint(temp)
@@ -98,7 +102,7 @@ function PlayerMatchManagerInfos:Start()
 		if respawnZone:IsA("BasePart") then
 			local basePart = respawnZone
 			basePart.Touched:Connect(function(hit)
-				if CanInteract() == false then
+				if CanInteract(hit) == false then
 					return
 				end
 				PlayerMatchManagerInfos:RespawnPlayerOnLastCheckpoint(hit.Parent)
